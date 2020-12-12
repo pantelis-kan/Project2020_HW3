@@ -1,7 +1,4 @@
-
-
 #include "Point_Table.hpp"
-#include "Hypercube.hpp"
 
 #include "utilities.hpp"
 #include <string>
@@ -11,8 +8,6 @@
 #include <cmath>
 #include <vector>
 #include <iterator>
-
-#include "Hypercube.hpp"
 
 using namespace std;
 
@@ -69,10 +64,10 @@ int Point_Array::FillPoints(string &input_fp){
 	myfile.read((char*)&num_cols, sizeof(num_cols));
 	num_cols = reverseInteger(num_cols);
 	
-	//cout << "Magic Number is:" << magic_number << endl;
-	//cout << "Number of images is:" << number_of_images << endl;
-	//cout << "Number of rows is:" << num_rows << endl;
-	//cout << "Number of columns is:" << num_cols << endl;
+	cout << "Magic Number is:" << magic_number << endl;
+	cout << "Number of images is:" << number_of_images << endl;
+	cout << "Number of rows is:" << num_rows << endl;
+	cout << "Number of columns is:" << num_cols << endl;
 
 
 	int counter = 0;
@@ -91,7 +86,11 @@ int Point_Array::FillPoints(string &input_fp){
 				
 				++counter;
 
+				cout << val << " ";
+				
 	        }
+			cout << endl;
+			
 	    }
 
 		counter = 0;		
@@ -149,30 +148,6 @@ int Point_Array::Compute_g(int position,int k,int M, const long long int m, doub
 	g_x = conc % tablesize;
 	return g_x;
 
-}
-
-
-string Point_Array::Compute_f(int position, int k, int M, const long long int m, 
-					double w, double** s_params, Hypercube* hcube){
-
-	string concat = "";
-	int h;
-	char bin;
-
-    //Run input and find LSH_Manhattan k times
-    //For every k time you run, flip coin for 0,1 
-    //  check if it exists inside map F_function and if not then map it
-
-    //Make and return bitstring with h1,h2,...,hk
-
-	for(int i = 0; i < k; i++){
-		h = points[position].LSH_Manhattan(M, m, w, s_params, i);
-		bin = hcube->Insert_to_F(h); // Returns 0 or 1 
-		concat = concat + bin; 
-		
-	}
-//	cout << "bitstring is" << concat << " and leght is " << concat.length() << endl;
-	return concat;
 }
 
 

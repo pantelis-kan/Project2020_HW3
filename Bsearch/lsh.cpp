@@ -23,8 +23,10 @@ const long long int m = 4294967291; // 2^32  - 5
 int N = 1;
 double R = 10000.0;
 int k = 4, L = 5;
-string filename = "train-images-idx3-ubyte";
-string filename2 = "t10k-images-idx3-ubyte";
+string inputfile_original = "train-images-idx3-ubyte";
+string inputfile_reduced = "out.bin";
+string queryfile_original = "t10k-images-idx3-ubyte";
+string queryfile_reduced;
 string outputfile = "lsh_results.txt";
 
 double w = 30000.0;
@@ -40,10 +42,16 @@ int main(int argc, char* argv[]){
 	for (int i = 1; i < argc; i+=2){
 		string arg = argv[i];
 		if (arg == "-d"){
-			filename = argv[i+1];
+			inputfile_original = argv[i+1];
+		}
+		else if (arg == "-i"){
+			inputfile_reduced = argv[i+1];
 		}
 		else if (arg == "-q"){
-			filename2 = argv[i+1];
+			queryfile_original = argv[i+1];
+		}
+		else if (arg == "-s"){
+			queryfile_reduced = argv[i+1];
 		}
 		else if (arg == "-k"){
 			k = atoi(argv[i+1]);
@@ -62,20 +70,6 @@ int main(int argc, char* argv[]){
 		else if (arg == "-o"){
 			outputfile = argv[i+1];
 		}
-		else if (arg == "-N"){
-			N = atoi(argv[i+1]);
-			if (N <= 0){
-				cout << "Wrong -N parameter! Please try again!" << endl;
-				exit(1);
-			}
-		}
-		else if (arg == "-R"){
-			R = atof(argv[i+1]);
-			if (R <= 0.0){
-				cout << "Wrong -R parameter! Please try again!" << endl;
-				exit(1);
-			}
-		}
 		else{
 			cout << "Wrong parameteres! Please try again!" << endl;
 			exit(1);
@@ -84,31 +78,16 @@ int main(int argc, char* argv[]){
 	}
 
 	int M = pow(2,32/k);
-
-	//cout << k << " " << L << " " << N << " " << R << " " <<outputfile <<endl;
-	int option;
-	cout << "Press 1 you want to run programme with default input data file. Press 2 if you want to choose other filename. Any other option will exit programme." << endl;
-	cin >> option;
-	if (option == 1){
-		cout << "You have chosen the default filename!" << endl;
-	}
-	else if(option == 2){
-		cout << "Insert input filename: "; 
-		cin >> filename;
-	}
-	else{
-		cout << "Programme is exiting!" << endl;
-		exit(1);
-	}
 	
-	cout << "Programme will run with filename: " << filename << " for input data" << endl; 
+	cout << "Programme will run with inputfile_original: " << inputfile_original << " for input data" << endl; 
+
 
 
 	/******************************************
-	 * Reading input dataset.
+	 * Reading REDUCED input dataset.
 	*******************************************/
 
-	int input_count = NumberOfPoints(filename);   // number of input points
+	int input_count = NumberOfPoints(inputfile_reduced);   // number of input points
 	int TableSize = input_count/8;
 
 	cout << "Number of points is : " << input_count <<endl;
@@ -116,13 +95,38 @@ int main(int argc, char* argv[]){
 
 	Point_Array input(input_count);
 	
-	if(input.FillPoints(filename) == 0) cout << "Filling input points successful"<<endl;
+	if(input.FillPoints(inputfile_reduced) == 0) cout << "Filling input points successful"<<endl;
 	else exit(-1);
 	
 
 	int dimension = input.get_dimension();
 	cout << endl << "Dimension = "<< dimension <<endl;
+
+
+	exit(1);
+
+
+
+	/******************************************
+	 * Reading ORIGINAL input dataset.
+	*******************************************/
+/*
+	int input_count = NumberOfPoints(inputfile_original);   // number of input points
+	int TableSize = input_count/8;
+
+	cout << "Number of points is : " << input_count <<endl;
+	cout << "TableSize = " << TableSize <<endl;
+
+	Point_Array input(input_count);
 	
+	if(input.FillPoints(inputfile_original) == 0) cout << "Filling input points successful"<<endl;
+	else exit(-1);
+	
+
+	int dimension = input.get_dimension();
+	cout << endl << "Dimension = "<< dimension <<endl;
+*/
+
 	/******************************************
 	 * Building si parameters needed for amplification
 	*******************************************/
@@ -134,8 +138,6 @@ int main(int argc, char* argv[]){
 	for (int i = 0; i < L*k; i++){
 		s_params[i] = new double[dimension];
 	} 
-
-	//w = compute_w(input, input_count);
 
 
 	//Limiting rand function to take values from 0.0 to w
@@ -177,15 +179,16 @@ int main(int argc, char* argv[]){
 	 * Creating necessary structures for the queries
 	 * Running until user terminates the programme
 	*******************************************/	
+	int option;
 	do{
-		cout << "Press 1 you want to run programme with default search and output data file. Press 2 if you want to choose other filename. Any other option will exit programme" << endl;
+		cout << "Press 1 you want to run programme with default search and output data file. Press 2 if you want to choose other inputfile_original. Any other option will exit programme" << endl;
 		cin >> option;
 		if (option == 1){
-			cout << "You have chosen the default filename!" << endl;
+			cout << "You have chosen the default inputfile_original!" << endl;
 		}
 		else if(option == 2){
 			cout << "Insert queries filename: "; 
-			cin >> filename2;
+			cin >> queryfile_original;
 			cout << "Insert output filename: "; 
 			cin >> outputfile;
 		}
@@ -194,13 +197,13 @@ int main(int argc, char* argv[]){
 			exit(1);
 		}
 
-		cout << "Search will be done using file with name: " << filename2 << endl;
+		cout << "Search will be done using file with name: " << queryfile_original << endl;
 		cout << "Output will be exported to file with name: " << outputfile << endl;
 
-		int queries_count = NumberOfPoints(filename2); // number of query points
+		int queries_count = NumberOfPoints(queryfile_original); // number of query points
 		cout << "Number of queries is : " << queries_count <<endl;
 		Point_Array queries(queries_count);
-		if(queries.FillPoints(filename2) == 0) cout << "Filling query points successful"<<endl;
+		if(queries.FillPoints(queryfile_original) == 0) cout << "Filling query points successful"<<endl;
 		else exit(-1);		
 
 		/******************************************
@@ -212,7 +215,7 @@ int main(int argc, char* argv[]){
 
 		LSH_Nearest_Neighbors(results, H_Tables, input, queries, queries_count, TableSize, s_params, L, k, M, m, w, N);
 
-		LSH_Range_Search(results, H_Tables, input, queries, queries_count, TableSize, s_params, L, k, M, m, w, R);
+		//LSH_Range_Search(results, H_Tables, input, queries, queries_count, TableSize, s_params, L, k, M, m, w, R);
 
 		cout << "Stage 2 completed!" << endl;
 
