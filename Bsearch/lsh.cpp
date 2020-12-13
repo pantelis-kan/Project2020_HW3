@@ -79,64 +79,62 @@ int main(int argc, char* argv[]){
 
 	int M = pow(2,32/k);
 	
-	cout << "Programme will run with inputfile_original: " << inputfile_original << " for input data" << endl; 
+	cout << "Programme will run with inputfile_original: " << inputfile_original << " for input_original data" << endl; 
 
-
-
-	/******************************************
-	 * Reading REDUCED input dataset.
-	*******************************************/
-
-	int input_count = NumberOfPoints(inputfile_reduced);   // number of input points
-	int TableSize = input_count/8;
-
-	cout << "Number of points is : " << input_count <<endl;
-	cout << "TableSize = " << TableSize <<endl;
-
-	Point_Array input(input_count);
-	
-	if(input.FillPoints(inputfile_reduced) == 0) cout << "Filling input points successful"<<endl;
-	else exit(-1);
-	
-
-	int dimension = input.get_dimension();
-	cout << endl << "Dimension = "<< dimension <<endl;
-
-
-	exit(1);
 
 
 
 	/******************************************
 	 * Reading ORIGINAL input dataset.
 	*******************************************/
-/*
-	int input_count = NumberOfPoints(inputfile_original);   // number of input points
-	int TableSize = input_count/8;
 
-	cout << "Number of points is : " << input_count <<endl;
-	cout << "TableSize = " << TableSize <<endl;
+	int input_count_original = NumberOfPoints(inputfile_original);   // number of input_original points
+	int TableSize_original = input_count_original/8;
 
-	Point_Array input(input_count);
+	cout << "Number of points is : " << input_count_original <<endl;
+	cout << "TableSize_original = " << TableSize_original <<endl;
+
+	Point_Array input_original(input_count_original);
 	
-	if(input.FillPoints(inputfile_original) == 0) cout << "Filling input points successful"<<endl;
+	if(input_original.FillPoints(inputfile_original) == 0) cout << "Filling input_original points successful"<<endl;
 	else exit(-1);
 	
 
-	int dimension = input.get_dimension();
-	cout << endl << "Dimension = "<< dimension <<endl;
-*/
+	int dimension_original = input_original.get_dimension();
+	cout << endl << "Dimension ORIGINAL= "<< dimension_original <<endl;
+
 
 	/******************************************
-	 * Building si parameters needed for amplification
+	 * Reading REDUCED input dataset.
+	*******************************************/
+
+	int input_count_reduced = NumberOfPoints(inputfile_reduced);   // number of input points
+	int TableSize_reduced = input_count_reduced/8;
+
+	cout << "Number of points in REDUCED is : " << input_count_reduced <<endl;
+	cout << "TableSize REDUCED = " << TableSize_reduced <<endl;
+
+	Point_Array input_reduced(input_count_reduced);
+	
+	if(input_reduced.FillPoints(inputfile_reduced) == 0) cout << "Filling input_reduced points successful"<<endl;
+	else exit(-1);
+	
+
+	int dimension_reduced = input_reduced.get_dimension();
+	cout << endl << "Dimension REDUCED= "<< dimension_reduced <<endl;
+
+
+
+	/******************************************
+	 * Building si parameters needed for amplification - ORIGINAL dataset
 	*******************************************/
 
 	// every h (h1, h2, ..., hk) has its own parameters for the amplification
 	// definition of si parameter with i = 0,1,...,d-1
-	double**  s_params = new double*[L*k];
+	double**  s_params_original = new double*[L*k];
 	
 	for (int i = 0; i < L*k; i++){
-		s_params[i] = new double[dimension];
+		s_params_original[i] = new double[dimension_original];
 	} 
 
 
@@ -146,33 +144,85 @@ int main(int argc, char* argv[]){
 	// create s parameters for each h(i). Since there are L hash tables, there are L*k rows in the table
 	for(int i = 0; i < L*k; i++){
 		
-		for(int j = 0; j < dimension; j++) {
+		for(int j = 0; j < dimension_original; j++) {
 			double rand = distribution(rand_generator);
-			s_params[i][j] = rand;
+			s_params_original[i][j] = rand;
 		}
 	}
 
+
 	/******************************************
-	 * Building LSHashtable and storing input data
+	 * Building si parameters needed for amplification - REDUCED dataset
+	*******************************************/
+
+	// every h (h1, h2, ..., hk) has its own parameters for the amplification
+	// definition of si parameter with i = 0,1,...,d-1
+	double**  s_params_reduced = new double*[L*k];
+	
+	for (int i = 0; i < L*k; i++){
+		s_params_reduced[i] = new double[dimension_reduced];
+	} 
+
+
+	//Limiting rand function to take values from 0.0 to w
+	//std::uniform_real_distribution<double> distribution(0.0,w);
+
+	// create s parameters for each h(i). Since there are L hash tables, there are L*k rows in the table
+	for(int i = 0; i < L*k; i++){
+		
+		for(int j = 0; j < dimension_reduced; j++) {
+			double rand = distribution(rand_generator);
+			s_params_reduced[i][j] = rand;
+		}
+	}
+
+
+
+	/******************************************
+	 * Building LSHashtable and storing ORIGINAL input data
 	 * Finding nearest neighbors with approximate and Range methods.
 	*******************************************/	
 
-	cout << endl << "Stage 1: Preprocessing stage... "<<endl;
+	cout << endl << "Stage 1: Preprocessing stage for ORIGINAL dataset... "<<endl;
 
 	//create L hash tables
-	Hash_Table**  H_Tables = new Hash_Table*[L];
+	Hash_Table**  H_Tables_original = new Hash_Table*[L];
 	
 	for (int i = 0; i < L; i++){	
-		H_Tables[i] = new Hash_Table(TableSize);
+		H_Tables_original[i] = new Hash_Table(TableSize_original);
 	}
 
 	auto t1 = std::chrono::high_resolution_clock::now();		
-	Preprocessing(H_Tables, input, input_count, TableSize, s_params, L, k, M, m, w);
+	Preprocessing(H_Tables_original, input_original, input_count_original, TableSize_original, s_params_original, L, k, M, m, w);
 	auto t2 = std::chrono::high_resolution_clock::now();
 
 	auto duration = std::chrono::duration_cast<std::chrono::seconds>( t2 - t1 ).count();
 
 	cout << "Stage 1 completed in " << duration << " seconds" << endl;
+
+
+	/******************************************
+	 * Building LSHashtable and storing REDUCED input data
+	 * Finding nearest neighbors with approximate and Range methods.
+	*******************************************/	
+
+	cout << endl << "Stage 1: Preprocessing stage for REDUCED dataset... "<<endl;
+
+	//create L hash tables
+	Hash_Table**  H_Tables_reduced = new Hash_Table*[L];
+	
+	for (int i = 0; i < L; i++){
+		H_Tables_reduced[i] = new Hash_Table(TableSize_reduced);
+	}
+
+	t1 = std::chrono::high_resolution_clock::now();		
+	Preprocessing(H_Tables_reduced, input_reduced, input_count_reduced, TableSize_reduced, s_params_reduced, L, k, M, m, w);
+	t2 = std::chrono::high_resolution_clock::now();
+
+	duration = std::chrono::duration_cast<std::chrono::seconds>( t2 - t1 ).count();
+
+	cout << "Stage 1 completed in " << duration << " seconds" << endl;
+
 
 	/******************************************
 	 * Reading query set and output filenames from user
@@ -187,7 +237,7 @@ int main(int argc, char* argv[]){
 			cout << "You have chosen the default inputfile_original!" << endl;
 		}
 		else if(option == 2){
-			cout << "Insert queries filename: "; 
+			cout << "Insert queries_original filename: "; 
 			cin >> queryfile_original;
 			cout << "Insert output filename: "; 
 			cin >> outputfile;
@@ -200,22 +250,20 @@ int main(int argc, char* argv[]){
 		cout << "Search will be done using file with name: " << queryfile_original << endl;
 		cout << "Output will be exported to file with name: " << outputfile << endl;
 
-		int queries_count = NumberOfPoints(queryfile_original); // number of query points
-		cout << "Number of queries is : " << queries_count <<endl;
-		Point_Array queries(queries_count);
-		if(queries.FillPoints(queryfile_original) == 0) cout << "Filling query points successful"<<endl;
+		int queries_count_original = NumberOfPoints(queryfile_original); // number of query points
+		cout << "Number of queries_original is : " << queries_count_original <<endl;
+		Point_Array queries_original(queries_count_original);
+		if(queries_original.FillPoints(queryfile_original) == 0) cout << "Filling query points successful"<<endl;
 		else exit(-1);		
 
 		/******************************************
-		 * Finding nearest neighbors with approximate and Range methods.
+		 * Finding nearest neighbors with approximate method.
 		*******************************************/
 
 		cout << "Stage 2: Finding Nearest Neighbors" <<endl;
-		Results results[queries_count];
+		Results results[queries_count_original];
 
-		LSH_Nearest_Neighbors(results, H_Tables, input, queries, queries_count, TableSize, s_params, L, k, M, m, w, N);
-
-		//LSH_Range_Search(results, H_Tables, input, queries, queries_count, TableSize, s_params, L, k, M, m, w, R);
+		LSH_Nearest_Neighbors(results, H_Tables_original, input_original, queries_original, queries_count_original, TableSize_original, s_params_original, L, k, M, m, w, N);
 
 		cout << "Stage 2 completed!" << endl;
 
@@ -225,18 +273,18 @@ int main(int argc, char* argv[]){
 
 		cout << "Stage 3: Exporting results to file" << endl;
 		string exact_NN_fp = "exact_results.txt";
-		Exact_NN_readonly(results, queries_count, N, exact_NN_fp);
+		Exact_NN_readonly(results, queries_count_original, N, exact_NN_fp);
 
 		ofstream final_results;
 		final_results.open(outputfile, ios::out | ios::trunc);
 
-		for (int i = 0; i < queries_count; i++){
+		for (int i = 0; i < queries_count_original; i++){
 			final_results << "Query: " << results[i].get_query_id() << endl;
 			
 			vector <int> temp_N_nearest_id = results[i].get_N_nearest_id();
 			vector <double> temp_N_nearest_distance = results[i].get_N_nearest_distance();
 			vector <double> temp_exact_N_nearest = results[i].get_exact_N_nearest();
-			vector <int> temp_Range_nearest = results[i].get_Range_nearest();
+
 
 			int counter = 1;
 			auto it_distance = temp_N_nearest_distance.cbegin();
@@ -256,12 +304,6 @@ int main(int argc, char* argv[]){
 			final_results << "tTrue: " << results[i].get_tTrue() << endl;
 
 
-			final_results << "R-near neighbors:" << endl;		
-
-			for(auto it_range = temp_Range_nearest.cbegin(); it_range != temp_Range_nearest.cend(); ++it_range){
-				final_results << *it_range << endl;
-			}
-
 		}
 
 		final_results.close();
@@ -269,18 +311,21 @@ int main(int argc, char* argv[]){
 		cout << "Stage 3 - Completed!" << endl;
 
 
-		for(int i = 0; i < L;  i++) delete H_Tables[i]; 
-		delete[] H_Tables;
 
-		for (int i = 0; i <  L * k; i++){
-			delete[] s_params[i];
-		}
-		delete[] s_params;
 		cout << "If you want to repeat search press 1! Any other answer will terminate the programme!" << endl; 
 		cin >> option; 
 
 	}while (option == 1);
+
+	for(int i = 0; i < L;  i++) delete H_Tables_original[i]; 
+	delete[] H_Tables_original;
 	
+	for (int i = 0; i <  L * k; i++){
+		delete[] s_params_original[i];
+	}
+	delete[] s_params_original;
+
+
 	return 0;
 }
 
