@@ -6,10 +6,15 @@
 using namespace std;
 
 Point::Point(){
-	dimension = 784;
+}
+
+void Point::Point_init(int dim){
+	dimension = dim;
+	point = new int [dimension];
 	is_centroid = false;
 	nearest_cluster = -1;
 }
+
 
 int Point::Nearest_Cluster_id(){
 
@@ -21,7 +26,7 @@ void Point::Assign_Cluster(int c){
 }
 
 Point::~Point(){
-
+	delete[] point;
 }
 
 
@@ -30,19 +35,25 @@ int Point::get_dimension(){
 }
 
 
-void Point::PrintPoint(){
-		for(int j = 0; j < dimension;  j++)
-			cout << point[j] << ' ';
+int Point::PrintPoint(){
+	int sum = 0;
 
-		cout << endl << endl;
+	for(int j = 0; j < dimension;  j++){
+		cout << (int)point[j] << ' ';
+		sum = sum + point[j];
+	}
+	cout << endl;
+	return sum;
+	
 }
 
 // add val to point vector
-void Point::AddtoPoint(int pos, int val){ 
+void Point::AddtoPoint(int pos, int* tempdata){ 
 
-	//cout << "Pushing " << val <<endl;
-	point[pos] = val;
-
+	for (int i = 0; i < pos; i++){
+		point[i] = tempdata[i];	
+	}
+	
 }
 
 
@@ -50,15 +61,15 @@ void Point::AddtoPoint(int pos, int val){
  // computes h(x) 
  int Point::LSH_Manhattan(int M, const long long int m, double w, double** s_params, int current_k){ 	
 
-	int Dimension = 784;
+	//int Dimension = 784;
 
-	int* coeff = new int[Dimension];
+	int* coeff = new int[dimension];
 	int hash = 0;
 	int result;
 
-	int k = Dimension-1;
+	int k = dimension-1;
 
-	for(int i = 0; i < Dimension; i++){
+	for(int i = 0; i < dimension; i++){
 
 
 		coeff[i] = floor( (  point[i] - s_params[current_k][i]) / w );

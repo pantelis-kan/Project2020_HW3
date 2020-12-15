@@ -23,7 +23,7 @@ const long long int m = 4294967291; // 2^32  - 5
 int N = 1;
 double R = 10000.0;
 int k = 4, L = 5;
-string inputfile_original = "train-images-idx3-ubyte";
+string inputfile_original = "1train-images-idx3-ubyte";
 string inputfile_reduced = "out.bin";
 string queryfile_original = "t10k-images-idx3-ubyte";
 string queryfile_reduced;
@@ -88,21 +88,24 @@ int main(int argc, char* argv[]){
 	 * Reading ORIGINAL input dataset.
 	*******************************************/
 
+
 	int input_count_original = NumberOfPoints(inputfile_original);   // number of input_original points
 	int TableSize_original = input_count_original/8;
 
+	int dimension_original = DimensionofPoint(inputfile_original);	
+
 	cout << "Number of points is : " << input_count_original <<endl;
 	cout << "TableSize_original = " << TableSize_original <<endl;
+	cout << endl << "Dimension ORIGINAL= "<< dimension_original <<endl;
 
-	Point_Array input_original(input_count_original);
+	Point_Array input_original(input_count_original, dimension_original);
 	
 	if(input_original.FillPoints(inputfile_original) == 0) cout << "Filling input_original points successful"<<endl;
 	else exit(-1);
-	
 
-	int dimension_original = input_original.get_dimension();
+
+	//int dimension_original = input_original.get_dimension();
 	cout << endl << "Dimension ORIGINAL= "<< dimension_original <<endl;
-
 
 	/******************************************
 	 * Reading REDUCED input dataset.
@@ -111,19 +114,21 @@ int main(int argc, char* argv[]){
 	int input_count_reduced = NumberOfPoints(inputfile_reduced);   // number of input points
 	int TableSize_reduced = input_count_reduced/8;
 
+	int dimension_reduced = DimensionofPoint(inputfile_reduced);	
+
 	cout << "Number of points in REDUCED is : " << input_count_reduced <<endl;
 	cout << "TableSize REDUCED = " << TableSize_reduced <<endl;
 
-	Point_Array input_reduced(input_count_reduced);
+	Point_Array input_reduced(input_count_reduced, dimension_reduced);
 	
 	if(input_reduced.FillPoints(inputfile_reduced) == 0) cout << "Filling input_reduced points successful"<<endl;
 	else exit(-1);
 	
 
-	int dimension_reduced = input_reduced.get_dimension();
+	//int dimension_reduced = input_reduced.get_dimension();
 	cout << endl << "Dimension REDUCED= "<< dimension_reduced <<endl;
 
-
+	exit(-1);
 
 	/******************************************
 	 * Building si parameters needed for amplification - ORIGINAL dataset
@@ -203,7 +208,7 @@ int main(int argc, char* argv[]){
 
 	/******************************************
 	 * Building LSHashtable and storing REDUCED input data
-	 * Finding nearest neighbors with approximate and Range methods.
+	 * Finding nearest neighbors with approximate method.
 	*******************************************/	
 
 	cout << endl << "Stage 1: Preprocessing stage for REDUCED dataset... "<<endl;
@@ -247,23 +252,46 @@ int main(int argc, char* argv[]){
 			exit(1);
 		}
 
-		cout << "Search will be done using file with name: " << queryfile_original << endl;
+		cout << "Search will be done using queryfile_original with name: " << queryfile_original << endl;
+		cout << "Search will be done using queryfile_reduced with name: " << queryfile_reduced << endl;
 		cout << "Output will be exported to file with name: " << outputfile << endl;
 
+
+		/******************************************
+		 * Reading queries for ORIGINAL and REDUCED.
+		 * Checking that the files have the same number of queries
+		*******************************************/
+
 		int queries_count_original = NumberOfPoints(queryfile_original); // number of query points
+
 		cout << "Number of queries_original is : " << queries_count_original <<endl;
-		Point_Array queries_original(queries_count_original);
+		Point_Array queries_original(queries_count_original, dimension_original);
 		if(queries_original.FillPoints(queryfile_original) == 0) cout << "Filling query points successful"<<endl;
 		else exit(-1);		
+
+		int queries_count_reduced = NumberOfPoints(queryfile_reduced); // number of query points
+		cout << "Number of queries_reduced is : " << queries_count_reduced <<endl;
+		Point_Array queries_reduced(queries_count_reduced, dimension_original);
+		if(queries_reduced.FillPoints(queryfile_reduced) == 0) cout << "Filling query points successful"<<endl;
+		else exit(-1);
+
+		if (queries_count_original != queries_count_reduced){
+			cout << "Error: queries_count_original is not the same as queries_count_reduced" << endl;
+			exit(-1);
+		}
+		
 
 		/******************************************
 		 * Finding nearest neighbors with approximate method.
 		*******************************************/
 
 		cout << "Stage 2: Finding Nearest Neighbors" <<endl;
-		Results results[queries_count_original];
+		
+		Results results_original[queries_count_original];
+		LSH_Nearest_Neighbors(results_original, H_Tables_original, input_original, queries_original, queries_count_original, TableSize_original, s_params_original, L, k, M, m, w, N);
 
-		LSH_Nearest_Neighbors(results, H_Tables_original, input_original, queries_original, queries_count_original, TableSize_original, s_params_original, L, k, M, m, w, N);
+		Results results_reduced[queries_count_reduced];
+		LSH_Nearest_Neighbors(results_reduced, H_Tables_reduced, input_reduced, queries_reduced, queries_count_reduced, TableSize_reduced, s_params_reduced, L, k, M, m, w, N);
 
 		cout << "Stage 2 completed!" << endl;
 
@@ -273,35 +301,37 @@ int main(int argc, char* argv[]){
 
 		cout << "Stage 3: Exporting results to file" << endl;
 		string exact_NN_fp = "exact_results.txt";
-		Exact_NN_readonly(results, queries_count_original, N, exact_NN_fp);
+		Exact_NN_readonly(results_original, queries_count_original, N, exact_NN_fp);
+//here probably needs to be added the reading of exact results for the NeuralNet
+
 
 		ofstream final_results;
 		final_results.open(outputfile, ios::out | ios::trunc);
 
 		for (int i = 0; i < queries_count_original; i++){
-			final_results << "Query: " << results[i].get_query_id() << endl;
+			final_results << "Query: " << results_original[i].get_query_id() << endl;
 			
-			vector <int> temp_N_nearest_id = results[i].get_N_nearest_id();
-			vector <double> temp_N_nearest_distance = results[i].get_N_nearest_distance();
-			vector <double> temp_exact_N_nearest = results[i].get_exact_N_nearest();
+			vector <int> temp_N_nearest_id_original = results_original[i].get_N_nearest_id();
+			vector <double> temp_N_nearest_distance_original = results_original[i].get_N_nearest_distance();
+			vector <double> temp_exact_N_nearest_original = results_original[i].get_exact_N_nearest();
 
 
 			int counter = 1;
-			auto it_distance = temp_N_nearest_distance.cbegin();
-			auto it_exact_distance = temp_exact_N_nearest.cbegin();
+			auto it_distance_original = temp_N_nearest_distance_original.cbegin();
+			auto it_exact_distance_original = temp_exact_N_nearest_original.cbegin();
 
-			for(auto it_id = temp_N_nearest_id.cbegin(); it_id != temp_N_nearest_id.cend(); ++it_id){
+			for(auto it_id = temp_N_nearest_id_original.cbegin(); it_id != temp_N_nearest_id_original.cend(); ++it_id){
 				final_results << "Nearest neighbor-" << counter << ": " << *it_id << endl;
-				final_results << "distanceLSH: " << *it_distance << endl;
-				final_results << "distanceTrue: " << *it_exact_distance << endl;
+				final_results << "distanceLSH: " << *it_distance_original << endl;
+				final_results << "distanceTrue: " << *it_exact_distance_original << endl;
 
-				it_distance++;
-				it_exact_distance++;
+				it_distance_original++;
+				it_exact_distance_original++;
 				counter++;
 			}
 
-			final_results << "tLSH: " << results[i].get_t_NN() << endl; 
-			final_results << "tTrue: " << results[i].get_tTrue() << endl;
+			final_results << "tLSH: " << results_original[i].get_t_NN() << endl; 
+			final_results << "tTrue: " << results_original[i].get_tTrue() << endl;
 
 
 		}

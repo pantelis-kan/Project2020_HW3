@@ -6,7 +6,7 @@ CFLAGS  = -g -Wall
 all: search 
 
 search: lsh.o Bucket_Implementation.o Hash_Table_Implementation.o NN_Functions.o Point_Table_Implementation.o Point_Implementation.o utilities.o 
-	$(CC) $(CFLAGS) -o lsh lsh.o Bucket_Implementation.o Hash_Table_Implementation.o NN_Functions.o Point_Table_Implementation.o Point_Implementation.o utilities.o
+	$(CC) $(CFLAGS) -o search lsh.o Bucket_Implementation.o Hash_Table_Implementation.o NN_Functions.o Point_Table_Implementation.o Point_Implementation.o utilities.o
 
 lsh.o: lsh.cpp
 	$(CC) -c lsh.cpp

@@ -57,6 +57,8 @@ int modular(int base,unsigned int exp , unsigned int mod);
 int powxy(long long int x, int y,int M);
 int string_mod(string num, int a);
 int NumberOfPoints(string&);
+int DimensionofPoint(string& input_fp);
+
 double FRandomGen(double low, double high, std::default_random_engine generator);
 int reverseInteger (int);
 

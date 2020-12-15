@@ -11,8 +11,13 @@
 
 using namespace std;
 
-Point_Array::Point_Array(int num){
+Point_Array::Point_Array(int num, int dimension){
 	points = new Point[num];
+
+	for (int i = 0; i < num; i++){
+		points[i].Point_init(dimension);
+	}
+	
 	ArraySize = num;
 }
 
@@ -28,9 +33,9 @@ int Point_Array::get_dimension(){
 }
 
 //printing image
-void Point_Array::PrintPoint(int position){
-	points[position].PrintPoint();
-}
+//void Point_Array::PrintPoint(int position){
+//	points[position].PrintPoint();
+//}
 
 
 int Point_Array::FillPoints(string &input_fp){
@@ -72,44 +77,52 @@ int Point_Array::FillPoints(string &input_fp){
 
 	int counter = 0;
 
+	int* tempdata = new int[num_cols*num_rows];
+
+	int total=0;
+	unsigned char temp;
+	
 	/* Reading the images, pixel-by-pixel and storing them to the array */
 	for(int i=0; i < number_of_images; i++){	// change back to i < number_of_images
 
 	    for(int row = 0; row < num_rows; row++){
 	        for(int col = 0; col < num_cols; col++){
 
-	            unsigned char temp = 0;
-	            myfile.read((char*)&temp, sizeof(temp));
-				int val = (int) temp;
+	            myfile.read(reinterpret_cast<char*>(&temp), 1); 
+	            // myfile.read((char*)&temp, sizeof(temp));
+				int val = (int) temp;				
 
-				points[i].AddtoPoint(counter,val);
-				
-				++counter;
+				//total = total + val;
 
-				cout << val << " ";
+				tempdata[counter] = val;
 				
-	        }
-			cout << endl;
-			
+				counter++;				
+	        }			
 	    }
 
+		points[i].AddtoPoint(counter, tempdata);
+
+		total = total + points[i].PrintPoint();
 		counter = 0;		
 	}
+
+	cout << "total is" << total << endl; 
+
 
 	myfile.close();
 	if(!myfile.good()) {
 	  cout << "Error occurred at reading!" << endl;
 	  return 1;
 	}
-    
+
 	return 0;
 
 }
 
-void Point_Array::AddtoPoint(int point_position,int coordinate_pos,int val){
+//void Point_Array::AddtoPoint(int point_position,int coordinate_pos,int val){
 
-	points[point_position].AddtoPoint(coordinate_pos,val);
-}
+//	points[point_position].AddtoPoint(coordinate_pos,val);
+//}
 
 int Point_Array::get_ArraySize(){
 	return ArraySize;

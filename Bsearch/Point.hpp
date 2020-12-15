@@ -14,10 +14,14 @@ class Point{
 
 	public:
 		Point();
+		void Point_init(int dim);
 		~Point();
 		int get_dimension(); // getter
-		void PrintPoint();  // prints the coordinates of the image
-		void AddtoPoint(int pos,int val);  // adds the integer 'val' to the coordinate in position 'pos'
+		int PrintPoint();  // prints the coordinates of the image
+//		void AddtoPoint(int pos,int val);  // adds the integer 'val' to the coordinate in position 'pos'
+void AddtoPoint(int pos, int* tempdata);
+
+
 		bool check_centroid();   // checks wether this point is a centroid
 		void set_centroid(bool val);  // sets/unsets the point as a centroid 
 		void Assign_Cluster(int c);  // assigns the point to a cluster pointed by 'c'
@@ -34,7 +38,8 @@ class Point{
 
 	private:
 
-		int point[784]; // a collection of integers for each point
+		int * point;
+		//int point[784]; // a collection of integers for each point
 		int dimension;
 		bool is_centroid; // wether the point is randomly chosen as a centroid in k-means++
 		int nearest_cluster;  // 
