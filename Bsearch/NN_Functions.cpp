@@ -238,7 +238,7 @@ void Exact_NN_readonly(Results* results, int queries_count, int N, string& input
 
 }
 
-/* 	Finding 50 exact nearest neghbors for every query
+/* 	Finding 1 exact nearest neghbor for every query
 	Saves the tTrue time
 */
 void Exact_NN(Point_Array& input, Point_Array& queries, int input_count, int queries_count, ofstream& outfile,int* time_passed){
@@ -270,9 +270,9 @@ void Exact_NN(Point_Array& input, Point_Array& queries, int input_count, int que
 		auto t2 = std::chrono::high_resolution_clock::now();		
 		auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();	 
 	
-		for(int i = 0; i < 50; i++){
+		for(int i = 0; i < 1; i++){
 
-			if( i == 49) outfile << distances[i] << " " << duration << endl;
+			if( i == 0) outfile << distances[i] << " " << duration << endl;
 			else outfile << distances[i] << endl;
 		}
 
