@@ -3,10 +3,24 @@ DEPS = Bucket.hpp Hash_Table.hpp NN_Functions.hpp Point_Table.hpp Point.hpp util
 OBJ = lsh.o Bucket_Implementation.o Hash_Table_Implementation.o NN_Functions.o Point_Table_Implementation.o Point_Implementation.o utilities.o Hypercube_Implementation.o Vertex_Implementation.o
 CFLAGS  = -g -Wall
 
-all: search 
+all: search cluster
 
 search: lsh.o Bucket_Implementation.o Hash_Table_Implementation.o NN_Functions.o Point_Table_Implementation.o Point_Implementation.o utilities.o 
 	$(CC) $(CFLAGS) -o search lsh.o Bucket_Implementation.o Hash_Table_Implementation.o NN_Functions.o Point_Table_Implementation.o Point_Implementation.o utilities.o
+
+cluster: cluster.o Cluster_Implementation.o Point_Implementation.o Point_Table_Implementation.o utilities.o Hash_Table_Implementation.o NN_Functions.o Bucket_Implementation.o Cluster_Functions.o 
+	$(CC) $(CFLAGS) -o cluster cluster.o Cluster_Implementation.o Point_Implementation.o Point_Table_Implementation.o utilities.o Hash_Table_Implementation.o NN_Functions.o Bucket_Implementation.o Cluster_Functions.o 
+
+cluster.o: cluster.cpp 
+	$(CC) -c cluster.cpp
+
+Cluster_Implementation.o: Cluster_Implementation.cpp
+	$(CC) -c Cluster_Implementation.cpp
+
+Cluster_Functions.o: Cluster_Functions.cpp
+	$(CC) -c Cluster_Functions.cpp
+
+
 
 lsh.o: lsh.cpp
 	$(CC) -c lsh.cpp

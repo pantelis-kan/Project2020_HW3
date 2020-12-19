@@ -307,7 +307,7 @@ void Distance_From_Centroids(Cluster* clusters, int k){
 	
 }
 
-
+/*
 void Reverse_Assignment(Point_Array& input,Cluster* clusters,int k,bool lsh){
 
 	bool not_converged = true;
@@ -338,7 +338,7 @@ void Reverse_Assignment(Point_Array& input,Cluster* clusters,int k,bool lsh){
 		}
 	}
 
-
+	
 	// Both the lsh and the hypercube use the same parameters
 	double**  s_params = new double*[L*k];
 	
@@ -355,8 +355,6 @@ void Reverse_Assignment(Point_Array& input,Cluster* clusters,int k,bool lsh){
 			s_params[i][j] = rand;
 		}
 	}
-
-
 
 	// start LSH routine
 	if(lsh == true){
@@ -379,6 +377,7 @@ void Reverse_Assignment(Point_Array& input,Cluster* clusters,int k,bool lsh){
 		cout << "Time taken : " << duration << " seconds" << endl;
 		
 	}	 
+	
 	// start HyperCube routine
 	else{
 
@@ -388,7 +387,7 @@ void Reverse_Assignment(Point_Array& input,Cluster* clusters,int k,bool lsh){
 		//Map points to Hypercube 
 		cube->Map_images(input, input.get_ArraySize(), k_hypercube, s_params, M, m, w, cube);
 	}
-
+	
 	while(not_converged == true){
 		++loops;
 		if(loops > 50) break;
@@ -429,19 +428,13 @@ void Reverse_Assignment(Point_Array& input,Cluster* clusters,int k,bool lsh){
     	delete[] H_Tables;
 		delete[] s_params;
 	}
-	else{
-	
-		for (int i = 0; i < k_lsh; i++){
-			delete s_params_cube[i];
-		} 
-		delete s_params_cube;
-		delete cube;		
-	}
 	
 
 }
+*/
 
 
+/*
 bool LSH_Reverse_Assignment(Point_Array& input,Cluster* clusters,int k,
 				Hash_Table** H_Tables,double** s_params,int* assigned,int TableSize){
 	
@@ -577,8 +570,10 @@ bool LSH_Reverse_Assignment(Point_Array& input,Cluster* clusters,int k,
 	return changed;
 
 }
+*/
 
 
+/*
 bool Hypercube_Reverse_Assignment(Point_Array& input,Cluster* clusters,int k,double** s_params_cube,
 									Hypercube* hcube,int* assigned,int probes, int Max_elements){
 
@@ -744,7 +739,7 @@ bool Hypercube_Reverse_Assignment(Point_Array& input,Cluster* clusters,int k,dou
 	cout << "New points assigned = " << *assigned <<endl;
 	return changed;
 }
-
+*/
 
 void Silhouette(Point_Array& input,Cluster* clusters,int k,double* s,double* s_total){
 

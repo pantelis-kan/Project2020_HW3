@@ -39,10 +39,10 @@ int Point::PrintPoint(){
 	int sum = 0;
 
 	for(int j = 0; j < dimension;  j++){
-//		cout << (int)point[j] << ' ';
+		cout << (int)point[j] << ' ';
 		sum = sum + point[j];
 	}
-//	cout << endl;
+	cout << endl;
 	return sum;
 	
 }

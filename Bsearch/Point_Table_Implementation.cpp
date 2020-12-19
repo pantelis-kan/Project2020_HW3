@@ -64,10 +64,11 @@ int Point_Array::FillPoints(string &input_fp){
 	myfile.read((char*)&num_cols, sizeof(num_cols));
 	num_cols = reverseInteger(num_cols);
 	
+	cout << endl << "Statistics for file : " << input_fp <<endl;
 	cout << "Magic Number is:" << magic_number << endl;
 	cout << "Number of images is:" << number_of_images << endl;
 	cout << "Number of rows is:" << num_rows << endl;
-	cout << "Number of columns is:" << num_cols << endl;
+	cout << "Number of columns is:" << num_cols << endl<<endl;
 
 
 	int counter = 0;
@@ -145,10 +146,11 @@ int Point_Array::FillPoints_reduced(string &input_fp){
 	myfile.read((char*)&num_cols, sizeof(num_cols));
 	num_cols = reverseInteger(num_cols);
 	
+	cout << endl << "Statistics for file : " << input_fp <<endl;
 	cout << "Magic Number is:" << magic_number << endl;
 	cout << "Number of images is:" << number_of_images << endl;
 	cout << "Number of rows is:" << num_rows << endl;
-	cout << "Number of columns is:" << num_cols << endl;
+	cout << "Number of columns is:" << num_cols << endl << endl;
 
 
 	int counter = 0;
@@ -180,7 +182,7 @@ int Point_Array::FillPoints_reduced(string &input_fp){
 		
 		points[i].AddtoPoint(counter, tempdata);
 
-		total = total + points[i].PrintPoint();
+		//total = total + points[i].PrintPoint();
 		counter = 0;		
 	}
 

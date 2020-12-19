@@ -25,13 +25,16 @@ double Min_Centroid_Distance(Point& point, Cluster* clusters,int size);
 void Distance_From_Centroids(Cluster* clusters, int k);
 int Min_Centroid_From_Point(Point& point, Cluster* clusters,int size);
 
+/*
 // Reverse Assignment Functions
 void Reverse_Assignment(Point_Array& input,Cluster* clusters,int k,bool lsh);
+
 bool LSH_Reverse_Assignment(Point_Array& input,Cluster* clusters,int k,
 						Hash_Table** H_Tables,double** params,int* assigned,int TableSize);
 
 bool Hypercube_Reverse_Assignment(Point_Array& input,Cluster* clusters,int k,double** s_params_cube,
 									Hypercube* hcube,int* assigned,int probes, int Max_elements);						
+*/
 
 // Update is common 
 void Update(Point_Array& input,Cluster* clusters,int k);

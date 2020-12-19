@@ -286,11 +286,12 @@ int DimensionofPoint(string& input_fp){
 	myfile.read((char*)&num_cols, sizeof(num_cols));
 	num_cols = reverseInteger(num_cols);
 	
+    /*
 	cout << "Magic Number is:" << magic_number << endl;
 	cout << "Number of images is:" << number_of_images << endl;
 	cout << "Number of rows is:" << num_rows << endl;
 	cout << "Number of columns is:" << num_cols << endl;
-
+    */
 	myfile.close();
 
 	return (num_cols*num_rows);
