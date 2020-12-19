@@ -8,6 +8,6 @@ Bsearch/Point_Implementation.o
 Bsearch/Point_Table_Implementation.o
 Bsearch/utilities.o
 Bsearch/train-images-idx3-ubyte
-Bsearch/temp
 Bsearch/search
-Bsearch/temp
+
+Bsearch/m

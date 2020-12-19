@@ -19,8 +19,7 @@ class Point{
 		int get_dimension(); // getter
 		int PrintPoint();  // prints the coordinates of the image
 //		void AddtoPoint(int pos,int val);  // adds the integer 'val' to the coordinate in position 'pos'
-void AddtoPoint(int pos, int* tempdata);
-
+		void AddtoPoint(int pos, int* tempdata);
 
 		bool check_centroid();   // checks wether this point is a centroid
 		void set_centroid(bool val);  // sets/unsets the point as a centroid 
@@ -37,9 +36,7 @@ void AddtoPoint(int pos, int* tempdata);
 		friend void Copy_Points(Point* from, Point* to);
 
 	private:
-
 		int * point;
-		//int point[784]; // a collection of integers for each point
 		int dimension;
 		bool is_centroid; // wether the point is randomly chosen as a centroid in k-means++
 		int nearest_cluster;  // 

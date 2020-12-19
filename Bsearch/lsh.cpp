@@ -23,10 +23,10 @@ const long long int m = 4294967291; // 2^32  - 5
 int N = 1;
 double R = 10000.0;
 int k = 4, L = 5;
-string inputfile_original = "1train-images-idx3-ubyte";
-string inputfile_reduced = "out.bin";
+string inputfile_original = "train-images-idx3-ubyte";
+string inputfile_reduced = "out_dataset.bin";
 string queryfile_original = "t10k-images-idx3-ubyte";
-string queryfile_reduced;
+string queryfile_reduced = "out_queryset.bin";
 string outputfile = "lsh_results.txt";
 
 double w = 30000.0;
@@ -121,14 +121,13 @@ int main(int argc, char* argv[]){
 
 	Point_Array input_reduced(input_count_reduced, dimension_reduced);
 	
-	if(input_reduced.FillPoints(inputfile_reduced) == 0) cout << "Filling input_reduced points successful"<<endl;
+	if(input_reduced.FillPoints_reduced(inputfile_reduced) == 0) cout << "Filling input_reduced points successful"<<endl;
 	else exit(-1);
 	
 
 	//int dimension_reduced = input_reduced.get_dimension();
 	cout << endl << "Dimension REDUCED= "<< dimension_reduced <<endl;
 
-	exit(-1);
 
 	/******************************************
 	 * Building si parameters needed for amplification - ORIGINAL dataset
@@ -272,7 +271,7 @@ int main(int argc, char* argv[]){
 		int queries_count_reduced = NumberOfPoints(queryfile_reduced); // number of query points
 		cout << "Number of queries_reduced is : " << queries_count_reduced <<endl;
 		Point_Array queries_reduced(queries_count_reduced, dimension_original);
-		if(queries_reduced.FillPoints(queryfile_reduced) == 0) cout << "Filling query points successful"<<endl;
+		if(queries_reduced.FillPoints_reduced(queryfile_reduced) == 0) cout << "Filling query points successful"<<endl;
 		else exit(-1);
 
 		if (queries_count_original != queries_count_reduced){

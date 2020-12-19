@@ -32,11 +32,6 @@ int Point_Array::get_dimension(){
 	return 0;
 }
 
-//printing image
-//void Point_Array::PrintPoint(int position){
-//	points[position].PrintPoint();
-//}
-
 
 int Point_Array::FillPoints(string &input_fp){
 
@@ -119,10 +114,90 @@ int Point_Array::FillPoints(string &input_fp){
 
 }
 
-//void Point_Array::AddtoPoint(int point_position,int coordinate_pos,int val){
 
-//	points[point_position].AddtoPoint(coordinate_pos,val);
-//}
+int Point_Array::FillPoints_reduced(string &input_fp){
+
+	ifstream myfile;
+
+	myfile.open(input_fp, ios::out | ios::binary);
+
+	if (!myfile.is_open()) {						/* probably exception handling here */
+	    cout << "Cannot open file!" << endl;
+		return 1;									/* what return value is proper? NULL? */
+	}
+
+
+	/* Initialize all with zero */
+	int magic_number = 0;								/* Read and ignore it! */
+	int number_of_images = 0;
+	int num_rows = 0;
+	int num_cols = 0;
+	
+	myfile.read((char*)&magic_number, sizeof(magic_number)); 
+	magic_number = reverseInteger(magic_number);
+	
+	myfile.read((char*)&number_of_images, sizeof(number_of_images));
+	number_of_images = reverseInteger(number_of_images);
+	
+	myfile.read((char*)&num_rows, sizeof(num_rows));
+	num_rows = reverseInteger(num_rows);
+	
+	myfile.read((char*)&num_cols, sizeof(num_cols));
+	num_cols = reverseInteger(num_cols);
+	
+	cout << "Magic Number is:" << magic_number << endl;
+	cout << "Number of images is:" << number_of_images << endl;
+	cout << "Number of rows is:" << num_rows << endl;
+	cout << "Number of columns is:" << num_cols << endl;
+
+
+	int counter = 0;
+
+	int* tempdata = new int[num_cols*num_rows];
+
+	long total=0;
+	// unsigned char temp;
+	unsigned short temp;
+
+	/* Reading the images, pixel-by-pixel and storing them to the array */
+	for(int i=0; i < number_of_images; i++){	// change back to i < number_of_images
+
+	    for(int row = 0; row < num_rows; row++){
+	        for(int col = 0; col < num_cols; col++){
+	            myfile.read((char*)&temp, 2);
+				int val = temp;				
+
+				//total = total + val;				
+				// if (i == 0){
+				// 	cout << temp << " ";
+				// }
+
+				tempdata[counter] = val;
+
+				counter++;				
+	        }			
+	    }
+		
+		points[i].AddtoPoint(counter, tempdata);
+
+		total = total + points[i].PrintPoint();
+		counter = 0;		
+	}
+
+	cout << endl;
+	cout << "total is" << total << endl; 
+
+
+	myfile.close();
+	if(!myfile.good()) {
+	  cout << "Error occurred at reading!" << endl;
+	  return 1;
+	}
+
+	return 0;
+
+}
+
 
 int Point_Array::get_ArraySize(){
 	return ArraySize;

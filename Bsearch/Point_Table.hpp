@@ -24,6 +24,8 @@ class Point_Array{
 		// compute h(x) for x = points[position] 
 		//long long int LSH_Manhattan( int M, const long long int m, double w, int position); 
 		int FillPoints(string &input_fp);
+		int FillPoints_reduced(string &input_fp);
+		
 
 //		void PrintPoint(int position);
 		bool check_centroid(int pos);
