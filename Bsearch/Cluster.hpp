@@ -15,6 +15,7 @@ class Cluster{
 
     public:
         Cluster();
+        void Inititalize_Centroid_Points(int dimension);
         ~Cluster();
         void Assign_Point(int id); // assign the point id to the cluster
         void Assign_Centroid(Point* c,int id);

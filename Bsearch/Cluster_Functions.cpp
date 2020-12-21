@@ -17,8 +17,6 @@ int k_hypercube = 3;
 int probes = 2;
 int Max_elements = 10;
 
-//const int M = 4294967291; 3.43597e+10
-
 int M = pow(2,32/k_lsh);
 
 const long long int m = 4294967291; // 2^32  - 5
@@ -212,7 +210,7 @@ bool Loyds_Assign(Point_Array& input,Cluster* clusters,int k,int* assigned){
 
 void Initialize_Centroids(Point_Array& input,Cluster* clusters,int k){
 
-    int input_points = input.get_ArraySize();
+	int input_points = input.get_ArraySize();
 
     // Pick the first centroid uniformly at random
     std::uniform_real_distribution<double> first_centroid(0.0,(double)input_points - 1); 
@@ -220,10 +218,10 @@ void Initialize_Centroids(Point_Array& input,Cluster* clusters,int k){
 	
 
     int first_centr = (int)first;
-
     input.set_centroid(first_centr,true); // mark the first centroid
-
+	
     Point* point = input.Retrieve_ptr(first_centr);
+	//point->PrintPoint();
     clusters[0].Assign_Centroid(point,first_centr); // assign first centroid
 
     cout << "1st centroid chosen at index " << first_centr + 1 << endl;

@@ -20,7 +20,7 @@ class Point{
 		int PrintPoint();  // prints the coordinates of the image
 //		void AddtoPoint(int pos,int val);  // adds the integer 'val' to the coordinate in position 'pos'
 		void AddtoPoint(int pos, int* tempdata);
-
+		void addtoPoint(int pos, int val);
 		bool check_centroid();   // checks wether this point is a centroid
 		void set_centroid(bool val);  // sets/unsets the point as a centroid 
 		void Assign_Cluster(int c);  // assigns the point to a cluster pointed by 'c'

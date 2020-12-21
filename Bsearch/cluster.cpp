@@ -69,8 +69,8 @@ int main(int argc, char* argv[]){
 	Point_Array input_new(N,dimension_new);
 	
 	//cout << dimension_original << "  " << dimension_new << endl;
-	//if(input.FillPoints(filename2) == 0) cout << "Filling input points successful"<<endl;
-	//else exit(-1);
+	if(input.FillPoints(filename2) == 0) cout << "Filling input points successful"<<endl;
+	else exit(-1);
 	
 
 	//int dimension = input.get_dimension();
@@ -87,6 +87,9 @@ int main(int argc, char* argv[]){
 	//cout << input_new.get_ArraySize() << endl;
 	// create k clusters
     Cluster* clusters = new Cluster[k];  
+
+	for(int i = 0; i < k; i++)
+		clusters[i].Inititalize_Centroid_Points(dimension_new);
 
 	cout << "Starting k-means++ Initialization" << endl;
 	Initialize_Centroids(input_new,clusters,k); // k-means++
@@ -106,7 +109,7 @@ int main(int argc, char* argv[]){
 
 	double time = (double)duration;
 
-	double* s = new double[input.get_ArraySize()];
+	double* s = new double[input_new.get_ArraySize()];
 	cout << endl << "Starting silhouette " <<endl;
 
 	double s_total;

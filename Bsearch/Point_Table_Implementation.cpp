@@ -72,13 +72,11 @@ int Point_Array::FillPoints(string &input_fp){
 
 
 	int counter = 0;
-
 	int* tempdata = new int[num_cols*num_rows];
 
 	int total=0;
 	unsigned char temp;
 	
-	/* Reading the images, pixel-by-pixel and storing them to the array */
 	for(int i=0; i < number_of_images; i++){	// change back to i < number_of_images
 
 	    for(int row = 0; row < num_rows; row++){
@@ -98,7 +96,7 @@ int Point_Array::FillPoints(string &input_fp){
 
 		points[i].AddtoPoint(counter, tempdata);
 
-		total = total + points[i].PrintPoint();
+		//total = total + points[i].PrintPoint();
 		counter = 0;		
 	}
 
@@ -112,6 +110,7 @@ int Point_Array::FillPoints(string &input_fp){
 	}
 
 	return 0;
+	delete tempdata;
 
 }
 
