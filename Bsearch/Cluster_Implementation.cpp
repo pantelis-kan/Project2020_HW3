@@ -22,6 +22,10 @@ Cluster::Cluster(){
     objective_function_value = 0.0;
 }
 
+void Cluster::Inititalize_Centroid_Points(int dimension){
+    centroid->Point_init(dimension);
+}
+
 void Cluster::Add_Objective(double val){
     //cout << "Adding to objective function : " << val<<endl;
     objective_function_value += val;

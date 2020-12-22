@@ -10,7 +10,7 @@ Point::Point(){
 
 void Point::Point_init(int dim){
 	dimension = dim;
-	point = new int [dimension];
+	point = new int[dimension];
 	is_centroid = false;
 	nearest_cluster = -1;
 }
@@ -50,10 +50,20 @@ int Point::PrintPoint(){
 // add val to point vector
 void Point::AddtoPoint(int pos, int* tempdata){ 
 
-	for (int i = 0; i < pos; i++){
+	int dimension = get_dimension();
+	//cout << dimension << endl;
+	for (int i = 0; i < dimension; i++){
 		point[i] = tempdata[i];	
 	}
 	
+}
+
+// add val to point vector
+void Point::addtoPoint(int pos, int val){ 
+
+	//cout << "Pushing " << val <<endl;
+	point[pos] = val;
+
 }
 
 
