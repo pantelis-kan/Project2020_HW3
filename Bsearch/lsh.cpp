@@ -27,7 +27,7 @@ string inputfile_original = "train-images-idx3-ubyte";
 string inputfile_reduced = "out_dataset.bin";
 string queryfile_original = "t10k-images-idx3-ubyte";
 string queryfile_reduced = "out_queryset.bin";
-string outputfile = "lsh_results.txt";
+string outputfile = "results_partB.txt";
 
 double w = 30000.0;
 
@@ -155,32 +155,6 @@ int main(int argc, char* argv[]){
 	}
 
 
-	/******************************************
-	 * Building si parameters needed for amplification - REDUCED dataset
-	*******************************************/
-
-	// every h (h1, h2, ..., hk) has its own parameters for the amplification
-	// definition of si parameter with i = 0,1,...,d-1
-	double**  s_params_reduced = new double*[L*k];
-	
-	for (int i = 0; i < L*k; i++){
-		s_params_reduced[i] = new double[dimension_reduced];
-	} 
-
-
-	//Limiting rand function to take values from 0.0 to w
-	//std::uniform_real_distribution<double> distribution(0.0,w);
-
-	// create s parameters for each h(i). Since there are L hash tables, there are L*k rows in the table
-	for(int i = 0; i < L*k; i++){
-		
-		for(int j = 0; j < dimension_reduced; j++) {
-			double rand = distribution(rand_generator);
-			s_params_reduced[i][j] = rand;
-		}
-	}
-
-
 
 	/******************************************
 	 * Building LSHashtable and storing ORIGINAL input data
@@ -201,29 +175,6 @@ int main(int argc, char* argv[]){
 	auto t2 = std::chrono::high_resolution_clock::now();
 
 	auto duration = std::chrono::duration_cast<std::chrono::seconds>( t2 - t1 ).count();
-
-	cout << "Stage 1 completed in " << duration << " seconds" << endl;
-
-
-	/******************************************
-	 * Building LSHashtable and storing REDUCED input data
-	 * Finding nearest neighbors with approximate method.
-	*******************************************/	
-
-	cout << endl << "Stage 1: Preprocessing stage for REDUCED dataset... "<<endl;
-
-	//create L hash tables
-	Hash_Table**  H_Tables_reduced = new Hash_Table*[L];
-	
-	for (int i = 0; i < L; i++){
-		H_Tables_reduced[i] = new Hash_Table(TableSize_reduced);
-	}
-
-	t1 = std::chrono::high_resolution_clock::now();		
-	Preprocessing(H_Tables_reduced, input_reduced, input_count_reduced, TableSize_reduced, s_params_reduced, L, k, M, m, w);
-	t2 = std::chrono::high_resolution_clock::now();
-
-	duration = std::chrono::duration_cast<std::chrono::seconds>( t2 - t1 ).count();
 
 	cout << "Stage 1 completed in " << duration << " seconds" << endl;
 
@@ -290,7 +241,6 @@ int main(int argc, char* argv[]){
 		LSH_Nearest_Neighbors(results_original, H_Tables_original, input_original, queries_original, queries_count_original, TableSize_original, s_params_original, L, k, M, m, w, N);
 
 		Results results_reduced[queries_count_reduced];
-		LSH_Nearest_Neighbors(results_reduced, H_Tables_reduced, input_reduced, queries_reduced, queries_count_reduced, TableSize_reduced, s_params_reduced, L, k, M, m, w, N);
 
 		cout << "Stage 2 completed!" << endl;
 
@@ -299,10 +249,20 @@ int main(int argc, char* argv[]){
 		*******************************************/
 
 		cout << "Stage 3: Exporting results to file" << endl;
-		string exact_NN_fp = "exact_results.txt";
-		Exact_NN_readonly(results_original, queries_count_original, N, exact_NN_fp);
-//here probably needs to be added the reading of exact results for the NeuralNet
+		string exact_NN_fp_original = "exact_results_original.txt";
+		Exact_NN_readonly(results_original, queries_count_original, N, exact_NN_fp_original);
 
+		string exact_NN_fp_reduced = "exact_results_reduced.txt";
+		Exact_NN_readonly(results_reduced, queries_count_reduced, N, exact_NN_fp_reduced);
+
+		double temp_distance;
+
+		unsigned long total_tReduced = 0;
+		unsigned long total_tLSH = 0;
+		unsigned long total_tTrue = 0;
+		
+		double appr_Reduced = 0.0;
+		double appr_LSH = 0.0;
 
 		ofstream final_results;
 		final_results.open(outputfile, ios::out | ios::trunc);
@@ -310,36 +270,67 @@ int main(int argc, char* argv[]){
 		for (int i = 0; i < queries_count_original; i++){
 			final_results << "Query: " << results_original[i].get_query_id() << endl;
 			
-			vector <int> temp_N_nearest_id_original = results_original[i].get_N_nearest_id();
-			vector <double> temp_N_nearest_distance_original = results_original[i].get_N_nearest_distance();
-			vector <double> temp_exact_N_nearest_original = results_original[i].get_exact_N_nearest();
+			vector <int> NN_id_original = results_original[i].get_N_nearest_id();
+			vector <double> NN_distance_original = results_original[i].get_N_nearest_distance();
+			auto it_NN_distance_original = NN_distance_original.cbegin();
+
+			vector <int> exact_id_original = results_original[i].get_exact_N_nearest_id();
+			vector <double> exact_distance_original = results_original[i].get_exact_N_nearest_distance();
+			auto it_exact_id_original = exact_id_original.cbegin();
+			auto it_exact_distance_original = exact_distance_original.cbegin();
 
 
-			int counter = 1;
-			auto it_distance_original = temp_N_nearest_distance_original.cbegin();
-			auto it_exact_distance_original = temp_exact_N_nearest_original.cbegin();
+			vector <int> exact_id_reduced = results_reduced[i].get_exact_N_nearest_id();
+			vector <double> exact_distance_reduced = results_reduced[i].get_exact_N_nearest_distance();
+			auto it_exact_id_reduced = exact_id_reduced.cbegin();
+			auto it_exact_distance_reduced = exact_distance_reduced.cbegin();
 
-			for(auto it_id = temp_N_nearest_id_original.cbegin(); it_id != temp_N_nearest_id_original.cend(); ++it_id){
-				final_results << "Nearest neighbor-" << counter << ": " << *it_id << endl;
-				final_results << "distanceLSH: " << *it_distance_original << endl;
+
+			for(auto it_NN_id_original = NN_id_original.cbegin(); it_NN_id_original != NN_id_original.cend(); ++it_NN_id_original){
+				
+				final_results << "Nearest neighbor Reduced: " << *it_exact_id_reduced << endl;
+				final_results << "Nearest neighbor LSH: " << *it_NN_id_original << endl;
+				final_results << "Nearest neighbor True: " << *it_exact_id_original << endl;
+
+				Point& query_point = queries_original.Retrieve(results_original[i].get_query_id()-1 );
+				Point& input_point = input_original.Retrieve(*it_exact_id_reduced - 1);
+
+
+				// compute Manhattan Distance for the query and the popped id
+				//here find the distance between the query id and the neighbor you get from the results and print it out as distanceReduced
+				temp_distance = Distance(query_point,input_point,1);
+				final_results << "distanceReduced: " << temp_distance << endl;
+				final_results << "distanceLSH: " << *it_NN_distance_original << endl;
 				final_results << "distanceTrue: " << *it_exact_distance_original << endl;
 
-				it_distance_original++;
+				appr_Reduced = appr_Reduced + (temp_distance/(*it_exact_distance_original));
+				appr_LSH = appr_LSH + ( (*it_NN_distance_original) / (*it_exact_distance_original));
+
+				it_NN_distance_original++;
+				it_exact_id_original++;
 				it_exact_distance_original++;
-				counter++;
+				it_exact_id_reduced++;
+				it_exact_distance_reduced++;
 			}
 
-			final_results << "tLSH: " << results_original[i].get_t_NN() << endl; 
-			final_results << "tTrue: " << results_original[i].get_tTrue() << endl;
-
+			//here add a sum of the tLSH, tTrue and tReduced and print it outside before closing the file
+			total_tReduced = total_tReduced + results_reduced[i].get_tTrue();
+			total_tLSH = total_tLSH + results_original[i].get_t_NN(); 
+			total_tTrue = total_tTrue + results_original[i].get_tTrue();
 
 		}
+
+		final_results << endl;
+		final_results << "tReduced: " << total_tReduced << endl; 
+		final_results << "tLSH: " << total_tLSH << endl; 
+		final_results << "tTrue: " << total_tTrue << endl;
+
+		final_results << "Approximation Factor for Reduced: " << appr_Reduced/queries_count_reduced << endl;
+		final_results << "Approximation Factor for LSH: " << appr_LSH/queries_count_original << endl;
 
 		final_results.close();
 
 		cout << "Stage 3 - Completed!" << endl;
-
-
 
 		cout << "If you want to repeat search press 1! Any other answer will terminate the programme!" << endl; 
 		cin >> option; 

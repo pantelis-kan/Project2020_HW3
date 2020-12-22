@@ -85,24 +85,20 @@ int Point_Array::FillPoints(string &input_fp){
 	        for(int col = 0; col < num_cols; col++){
 
 	            myfile.read(reinterpret_cast<char*>(&temp), 1); 
-	            // myfile.read((char*)&temp, sizeof(temp));
 				int val = (int) temp;				
 
-				//total = total + val;
-
 				tempdata[counter] = val;
-				
 				counter++;				
 	        }			
 	    }
 
 		points[i].AddtoPoint(counter, tempdata);
 
-		total = total + points[i].PrintPoint();
+		// total = total + points[i].PrintPoint();
 		counter = 0;		
 	}
 
-	cout << "total is" << total << endl; 
+	// cout << "total is" << total << endl; 
 
 
 	myfile.close();
@@ -186,8 +182,7 @@ int Point_Array::FillPoints_reduced(string &input_fp){
 		counter = 0;		
 	}
 
-	cout << endl;
-	cout << "total is" << total << endl; 
+	// cout << "total is" << total << endl; 
 
 
 	myfile.close();

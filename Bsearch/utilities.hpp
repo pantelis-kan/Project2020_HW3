@@ -23,7 +23,7 @@ class Results{
 
         void set_query_id(int id);
         void insert_N_nearest(int nearest_neibhor_id, double distance);
-        void insert_exact_N_nearest(int nearest_neighbor_id);
+        void insert_exact_N_nearest(int nearest_neighbor_id, double distance);
         void insert_Range_nearest(int nearest_neibhor_id); 
         void insert_tTrue(int tTrue);     
         void insert_t_NN(int t_NN);  
@@ -31,7 +31,8 @@ class Results{
         int get_query_id();
         vector <int> get_N_nearest_id();
         vector <double> get_N_nearest_distance();
-        vector <double> get_exact_N_nearest();
+        vector <int> get_exact_N_nearest_id();
+        vector <double> get_exact_N_nearest_distance();
         vector <int> get_Range_nearest();
         int get_tTrue();
         int get_t_NN();
@@ -40,7 +41,8 @@ class Results{
         int query_id;
         vector <int> N_nearest_id;
         vector <double> N_nearest_distance;
-        vector <double> exact_N_nearest;
+        vector <int> exact_N_nearest_id;
+        vector <double> exact_N_nearest_distance;
         vector <int> Range_nearest;
         int exact_NN_time;
         int NN_time;

@@ -31,8 +31,7 @@ void LSH_Range_Search(Results* results, Hash_Table** H_Tables, Point_Array& inpu
 
 void Exact_NN_readonly(Results* results, int queries_count, int N, string& input_fp);
 
-void Exact_NN(Point_Array& input, Point_Array& queries,int N,int N_q,ofstream& outfile,int* time_passed);
+void Exact_NN(Point_Array& input, Point_Array& queries, int input_count, int queries_count, ofstream& outfile);
 double compute_w(Point_Array& input, int N);
-
 
 #endif

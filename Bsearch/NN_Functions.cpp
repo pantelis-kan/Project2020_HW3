@@ -206,6 +206,7 @@ void LSH_Range_Search(Results* results, Hash_Table** H_Tables, Point_Array& inpu
 void Exact_NN_readonly(Results* results, int queries_count, int N, string& input_fp){
 	string line;
 	int nearest_neighbor_id;
+	int distance;
 	int tTrue;
 
 	ifstream myfile;
@@ -217,20 +218,20 @@ void Exact_NN_readonly(Results* results, int queries_count, int N, string& input
 	}
 
 	for (int i = 0; i < queries_count; i++){
-		for (int j = 0; j < 50; j++){
+		for (int j = 0; j < 1; j++){
 			getline(myfile, line);
 			istringstream iss(line);
-        	iss >> nearest_neighbor_id >> tTrue;
-			results[i].insert_exact_N_nearest(nearest_neighbor_id);
+        	iss >> nearest_neighbor_id >> distance >> tTrue;
+			results[i].insert_exact_N_nearest(nearest_neighbor_id, distance);
 		}
 
 		results[i].insert_tTrue(tTrue);
-		if (N > 50){
-			int remaining = N - 50;
-			for (int q = 0; q < remaining; q++){
-				results[i].insert_exact_N_nearest(-1);
-			}
-		}
+		// if (N > 50){
+		// 	int remaining = N - 50;
+		// 	for (int q = 0; q < remaining; q++){
+		// 		results[i].insert_exact_N_nearest(-1);
+		// 	}
+		// }
 	}
 
 	
@@ -241,7 +242,8 @@ void Exact_NN_readonly(Results* results, int queries_count, int N, string& input
 /* 	Finding 1 exact nearest neghbor for every query
 	Saves the tTrue time
 */
-void Exact_NN(Point_Array& input, Point_Array& queries, int input_count, int queries_count, ofstream& outfile,int* time_passed){
+// void Exact_NN(Point_Array& input, Point_Array& queries, int input_count, int queries_count, ofstream& outfile,int* time_passed){
+void Exact_NN(Point_Array& input, Point_Array& queries, int input_count, int queries_count, ofstream& outfile){
 
 	int nearest_neighbor_id;
 	double min_distance;
@@ -249,35 +251,43 @@ void Exact_NN(Point_Array& input, Point_Array& queries, int input_count, int que
 
 	long double dist_sum = 0.0;
 	
-	double distances[input_count]; // each query has maximum input_count neighbors 
+    multimap <double, int> distances; // empty multimap container - <distance,ID>
 
 	
 	for(int j = 0; j < queries_count; j++){
+	// for(int j = 0; j < 600; j++){
 		auto t1 = std::chrono::high_resolution_clock::now();
 		Point& query_point = queries.Retrieve(j);
 
 		for(int i = 0; i < input_count; i++){
+		// for(int i = 0; i < 100; i++){
 	
 			Point& input_point = input.Retrieve(i);
 			distance = Distance(query_point,input_point,1);
 			
-			distances[i] = distance;
+			// distances[i] = distance;
+			distances.insert(pair<double,int> (distance, i+1));
 
 	 	}
-
-		sort(distances, distances+input_count);
 
 		auto t2 = std::chrono::high_resolution_clock::now();		
 		auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();	 
 	
-		for(int i = 0; i < 1; i++){
+		multimap <double, int> :: iterator itr;
+		itr = distances.begin();
+		for (int i = 0; i < 1; i++){
+		// for (int i = 0; i < 10; i++){
+			
+			if(i == 0) outfile << itr->second << " " << itr->first << " " << duration << endl;
+			else outfile << itr->second << " " << itr->first << endl;
 
-			if( i == 0) outfile << distances[i] << " " << duration << endl;
-			else outfile << distances[i] << endl;
+			++itr;
+			if(itr == distances.end())
+				break;
+
 		}
 
-		//cout << "Time taken : " << duration <<endl;
-		//cout << "Exact NN for query " << j+1 << " = " << nearest_neighbor_id << " with distance " << min_distance <<endl;
+		distances.clear();
 
 	}
 

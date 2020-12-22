@@ -45,4 +45,4 @@ utilities.o: utilities.cpp utilities.hpp
 
 .PHONY: clean //necessary in case file with name clean exists
 clean:
-	rm *.o lsh 
+	rm *.o search 

@@ -25,8 +25,9 @@ void Results::insert_N_nearest(int nearest_neighbor_id, double distance){
     N_nearest_distance.emplace_back(distance);
 }
 
-void Results::insert_exact_N_nearest(int nearest_neighbor_id){
-    exact_N_nearest.emplace_back(nearest_neighbor_id);
+void Results::insert_exact_N_nearest(int nearest_neighbor_id, double distance){
+    exact_N_nearest_id.emplace_back(nearest_neighbor_id);
+    exact_N_nearest_distance.emplace_back(distance);
 }
 
 void Results::insert_tTrue(int tTrue){
@@ -53,9 +54,12 @@ vector <double> Results::get_N_nearest_distance(){
     return N_nearest_distance;
 }
 
-vector <double> Results::get_exact_N_nearest(){
-    return exact_N_nearest;
+vector <int> Results::get_exact_N_nearest_id(){
+    return exact_N_nearest_id;
+}
 
+vector <double> Results::get_exact_N_nearest_distance(){
+    return exact_N_nearest_distance;
 }
 
 /*

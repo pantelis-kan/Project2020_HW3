@@ -26,11 +26,8 @@ int main(){
 
 	int queries_count = NumberOfPoints(filename2); // number of query points
 
-	int TableSize = input_count/8;
-
 	cout << "Number of points is : " << input_count <<endl;
 	cout << "Number of queries is : " << queries_count <<endl;
-	cout << "TableSize = " << TableSize <<endl;
 
 	Point_Array input(input_count, dimension);
 	Point_Array queries(queries_count, dimension);
@@ -51,9 +48,11 @@ int main(){
     ofstream outfile;
     outfile.open("exact_results_original.txt", ios::out | ios::trunc );
 
-    int time_passed;
-    Exact_NN(input, queries, input_count, queries_count, outfile, &time_passed);
+    Exact_NN(input, queries, input_count, queries_count, outfile);
 
-    outfile << time_passed << endl;
+    // int time_passed;
+    // Exact_NN(input, queries, input_count, queries_count, outfile, &time_passed);
+
+    // outfile << time_passed << endl;
     outfile.close();
 }
