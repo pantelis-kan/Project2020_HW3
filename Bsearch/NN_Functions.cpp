@@ -255,12 +255,12 @@ void Exact_NN(Point_Array& input, Point_Array& queries, int input_count, int que
 
 	
 	for(int j = 0; j < queries_count; j++){
-	// for(int j = 0; j < 600; j++){
+	// for(int j = 0; j < 100; j++){
 		auto t1 = std::chrono::high_resolution_clock::now();
 		Point& query_point = queries.Retrieve(j);
 
 		for(int i = 0; i < input_count; i++){
-		// for(int i = 0; i < 100; i++){
+		// for(int i = 0; i < 600; i++){
 	
 			Point& input_point = input.Retrieve(i);
 			distance = Distance(query_point,input_point,1);
