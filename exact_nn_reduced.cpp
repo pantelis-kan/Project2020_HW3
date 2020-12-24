@@ -21,6 +21,28 @@ int main(){
     string filename = "out_dataset.bin";
 	string filename2 = "out_queryset.bin";
 
+	int option;
+	cout << "Press 1 you want to run programme with default search and output data file. Press 2 if you want to choose other dataset and queryset. Any other option will exit programme" << endl;
+	cin >> option;
+	
+	if (option == 1){
+		cout << "You have chosen the default inputfiles!" << endl;
+	}
+	else if(option == 2){
+		cout << "Insert dataset filename: "; 
+		cin >> filename;
+		cout << "Insert queryset filename: "; 
+		cin >> filename2;
+	}
+	else{
+		cout << "Programme is exiting!" << endl;
+		exit(1);
+	}
+	cout << "Search will be done using dataset with name: " << filename << endl;
+	cout << "Search will be done using queryset with name: " << filename2 << endl;
+
+
+
 	int input_count = NumberOfPoints(filename);   // number of input points
 	int dimension = DimensionofPoint(filename);	
 
@@ -49,9 +71,5 @@ int main(){
 
     Exact_NN(input, queries, input_count, queries_count, outfile);
 
-    // int time_passed;
-    // Exact_NN(input, queries, input_count, queries_count, outfile, &time_passed);
-
-    // outfile << time_passed << endl;
     outfile.close();
 }
