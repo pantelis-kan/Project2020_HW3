@@ -31,7 +31,7 @@ string configuration_filename = "cluster.conf";
 string method = "Classic";
 string outputfile = "cluster_output.txt";
 string inputfile_reduced = "out_queryset.bin";
-string classes_file = "";
+string class_file = "class_file.txt";
 
 bool complete = false;
 
@@ -53,7 +53,7 @@ int main(int argc, char* argv[]){
 			outputfile = argv[i+1];
 		}
 		else if (arg == "-n"){
-			classes_file = argv[i+1];
+			class_file = argv[i+1];
 		}
 	}
 
@@ -81,18 +81,17 @@ int main(int argc, char* argv[]){
 
 	Configuration_File(configuration_filename,&k);
 	
-	//input_new.Retrieve_ptr(0)->PrintPoint();
-	//cout <<"print ok"<<endl;
-	//cout << input_new.get_dimension() << endl;
-	//cout << input_new.get_ArraySize() << endl;
-	// create k clusters
+	
+
+	// ----------- ORIGINAL SPACE -----------
+
     Cluster* clusters = new Cluster[k];  
 
 	for(int i = 0; i < k; i++)
-		clusters[i].Inititalize_Centroid_Points(dimension_new);
+		clusters[i].Inititalize_Centroid_Points(dimension_original);
 
 	cout << "Starting k-means++ Initialization" << endl;
-	Initialize_Centroids(input_new,clusters,k); // k-means++
+	Initialize_Centroids(input,clusters,k); // k-means++
 	cout << "Initialization complete"<<endl;
 
 	auto t1 = std::chrono::high_resolution_clock::now();
@@ -100,7 +99,7 @@ int main(int argc, char* argv[]){
 
 	//Lloyds
 	cout << endl << "Performing Lloyd's assignment" <<endl <<endl;
-	Loyds_Clusters(input_new,clusters,k);
+	Loyds_Clusters(input,clusters,k);
 
 
 	auto t2 = std::chrono::high_resolution_clock::now();		
@@ -109,18 +108,64 @@ int main(int argc, char* argv[]){
 
 	double time = (double)duration;
 
-	double* s = new double[input_new.get_ArraySize()];
+	double* s = new double[input.get_ArraySize()];
 	cout << endl << "Starting silhouette " <<endl;
 
 	double s_total;
 
-	Silhouette(input_new,clusters,k,s,&s_total);
+	Silhouette(input,clusters,k,s,&s_total);
 
 	cout << endl << "Printing output to file " << outputfile << endl;
-	Output_Results(input_new,clusters,k,s,outputfile,method,time,s_total,complete);
+	string original_header = "ORIGINAL SPACE";
+	Output_Results(input,clusters,k,s,outputfile,time,s_total,original_header);
+
+	delete[] clusters;
+
+	// ---------------------- NEW SPACE ----------------------------
+
+	string outputfile_new_dimension = "cluster_output_new_dimension.txt";
+	clusters = new Cluster[k];  
+
+	for(int i = 0; i < k; i++)
+		clusters[i].Inititalize_Centroid_Points(dimension_new);
+
+	cout << "Starting k-means++ Initialization" << endl;
+	Initialize_Centroids(input_new,clusters,k); // k-means++
+	cout << "Initialization complete"<<endl;
+
+	auto t1_new = std::chrono::high_resolution_clock::now();
+
+
+	//Lloyds
+	cout << endl << "Performing Lloyd's assignment" <<endl <<endl;
+	Loyds_Clusters(input_new,clusters,k);
+
+
+	auto t2_new = std::chrono::high_resolution_clock::now();		
+	auto duration_new = std::chrono::duration_cast<std::chrono::seconds>( t2_new - t1_new ).count();
+	cout << "Time taken : " << duration_new << " seconds" <<endl;
+
+
+	double* s1 = new double[input_new.get_ArraySize()];
+	cout << endl << "Starting silhouette " <<endl;
+
+	Silhouette(input_new,clusters,k,s1,&s_total);
+
+	double time_new = (double)duration_new;
+
+	cout << endl << "Printing output to file " << outputfile << endl;
+	string new_header = "NEW SPACE";
+	Output_Results(input_new,clusters,k,s1,outputfile_new_dimension,time_new,s_total,new_header);
+	
+
+	string class_output = "class_file_output.txt";
+	Class_File_Output(input,class_file,class_output);
+
+	//cout << Distance(input.Retrieve(3),input.Retrieve(10),1) << endl;
 
 	delete[] clusters;
 	delete[] s;
+	delete[] s1;
 }
 
 

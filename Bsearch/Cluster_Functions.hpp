@@ -45,7 +45,9 @@ double Average_Distance(Point_Array& input,Point& pt,Cluster& cluster);
 
 // parsing cluster.conf
 void Configuration_File(string filename,int* K);
-void Output_Results(Point_Array& input,Cluster* clusters, int k ,double *s, string outputfile,string method,
-					double time,double s_total,bool complete);
+void Output_Results(Point_Array& input,Cluster* clusters, int k ,double *s, string outputfile,
+					double time,double s_total,string message);
+
+void Class_File_Output(Point_Array& input,string class_file,string class_output);					
 
 #endif

@@ -13,3 +13,10 @@ Bsearch/search
 Bsearch/m
 Bsearch/t10k-images-idx3-ubyte
 
+Bsearch/class_file_output.txt
+Bsearch/class_file_parser
+Bsearch/class_file.txt
+Bsearch/cluster_output.txt
+Bsearch/cluster
+Bsearch/cluster_output_new_dimension.txt
+Bsearch/class_file_parser.cpp
