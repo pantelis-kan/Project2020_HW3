@@ -48,6 +48,7 @@ def read_input(filename):
     data = data.reshape(num_images, row_num, col_num, 1)
     return data
 
+global enlayers
 enlayers = 0
 
 def encoder(input_img):
@@ -111,8 +112,8 @@ Default : 80% train data , 20% validation data
 
 from tensorflow.python.client import device_lib
 
-input_filename = "/content/drive/My Drive/ML/data3/train-images-idx3-ubyte" #for the Colab
-query_filename = "/content/drive/MyDrive/ML/data3/t10k-images-idx3-ubyte" #for the Colab
+input_filename = "train-images-idx3-ubyte"
+query_filename = "t10k-images-idx3-ubyte" 
 output_dataset_filename = "out_dataset.bin"
 output_queryset_filename = "out_queryset.bin"
 
@@ -164,7 +165,6 @@ Save the model with .h5 extension and plot the training and validation loss
 """
 
 repeat = True
-global enlayers
 global reduced_dimension
 reduced_dimension = 10
 
@@ -216,7 +216,7 @@ Pass the input through it and then save the results in the output file
 
 if (int(retrain_option) != 1):
     # autoencoder = keras.models.load_model('/content/drive/MyDrive/ML/data3/results/layers6_epochs100_batch512.h5') #for colab
-    autoencoder = keras.models.load_model(model_path + h5name + '.h5') #make one for .py
+    autoencoder = keras.models.load_model('layers6_epochs100_batch512.h5') #for .py
 
 
 autoencoder.summary()
