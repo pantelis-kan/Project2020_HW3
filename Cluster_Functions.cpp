@@ -305,440 +305,6 @@ void Distance_From_Centroids(Cluster* clusters, int k){
 	
 }
 
-/*
-void Reverse_Assignment(Point_Array& input,Cluster* clusters,int k,bool lsh){
-
-	bool not_converged = true;
-	int loops = 0;
-
-	int old_assigned;
-	// in the first loop, all the points will be assigned
-	int new_assigned = input.get_ArraySize();
-
-	int TableSize = input.get_ArraySize() / 8;
-	int dimension = input.get_dimension();
-
-	Hash_Table**  H_Tables;
-	Hypercube* cube;
-
-	double**  s_params_cube = new double*[k_lsh];
-	for (int i = 0; i < k_lsh; i++){
-		s_params_cube[i] = new double[dimension];
-	} 
-
-	std::uniform_real_distribution<double> distribution(0.0,w);
-
-	// create s parameters for each hi. Since there is only one hash table, there are k rows in the table
-	for(int i = 0; i < k_lsh; i++){
-		for(int j = 0; j < dimension; j++) {
-			double rand = distribution(rand_generator);
-			s_params_cube[i][j] = rand;
-		}
-	}
-
-	
-	// Both the lsh and the hypercube use the same parameters
-	double**  s_params = new double*[L*k];
-	
-	for (int i = 0; i < L*k_lsh; i++){
-		s_params[i] = new double[dimension];
-	} 
-
-
-	// create s parameters for each h(i). Since there are L hash tables, there are L*k rows in the table
-	for(int i = 0; i < L*k_lsh; i++){
-		
-		for(int j = 0; j < dimension; j++) {
-			double rand = distribution(param_rand_generator);
-			s_params[i][j] = rand;
-		}
-	}
-
-	// start LSH routine
-	if(lsh == true){
-	
-		//create L hash tables
-		H_Tables = new Hash_Table*[L];
-
-		for (int i = 0; i < L; i++){	
-			H_Tables[i] = new Hash_Table(TableSize);
-		}
-
-		cout << "Hashing input to buckets " <<endl;
-
-		auto t1 = std::chrono::high_resolution_clock::now();	
-		// hashing the input to buckets
-		Preprocessing(H_Tables, input, input.get_ArraySize(), TableSize, s_params, L, k_lsh, M, m, w);
-		
-		auto t2 = std::chrono::high_resolution_clock::now();		
-		auto duration = std::chrono::duration_cast<std::chrono::seconds>( t2 - t1 ).count();
-		cout << "Time taken : " << duration << " seconds" << endl;
-		
-	}	 
-	
-	// start HyperCube routine
-	else{
-
-		// create a Hypercube instance
-		cube = new Hypercube(k_hypercube);
-		
-		//Map points to Hypercube 
-		cube->Map_images(input, input.get_ArraySize(), k_hypercube, s_params, M, m, w, cube);
-	}
-	
-	while(not_converged == true){
-		++loops;
-		if(loops > 50) break;
-
-		cout << endl << "Loop " << loops << endl;
-		old_assigned = new_assigned;
-		bool changed;
-		
-		if(lsh == true) changed = LSH_Reverse_Assignment(input,clusters,k,H_Tables,s_params,&new_assigned, TableSize);
-		else changed = Hypercube_Reverse_Assignment(input,clusters,k,s_params_cube,cube,&new_assigned,probes,Max_elements);
-
-
-		if(loops > 1){
-			if(abs(new_assigned - old_assigned) <= 10){
-				not_converged = false;
-				break;
-			}
-		}
-
-		if(changed == false){
-			not_converged = false;
-			break;
-		}
-
-		Update(input,clusters,k);
-		cout << "Update() finished" <<endl;
-	}
-	if(not_converged == true) cout << "Clustering failed"<<endl;
-	else cout << "Clustering successful" << endl;
-
-	
-	if(lsh == true){
-
-		for(int i = 0; i < L;  i++) delete H_Tables[i]; 
-		for(int i = 0; i < L*k_lsh; i++) delete[] s_params[i]; 
-    	
-    	//Free the array of pointers
-    	delete[] H_Tables;
-		delete[] s_params;
-	}
-	
-
-}
-*/
-
-
-/*
-bool LSH_Reverse_Assignment(Point_Array& input,Cluster* clusters,int k,
-				Hash_Table** H_Tables,double** s_params,int* assigned,int TableSize){
-	
-	int dimension = input.get_dimension();
-	int query_bucket_position;
-	int points_not_changed = 0;
-	int input_points = input.get_ArraySize();
-	bool changed = true;
-	int points_already_assigned = 0;
-
-	// Insert clusters to a Point_Array class
-	Point_Array cluster_table(k);
-
-	// stores distinct point ids that are assigned to a cluster
-	std::set<int> already_assigned;
-
-	// for each cluster
-	for(int i = 0; i < k; i++){		
-		Point* centr = clusters[i].get_centroid();
-		Point& centroid_point = *centr;
-
-		// Fill the cluster Point_Array class with the centroids.
-		// They must be re-filled at each assignment, since
-		// the centroids change coordinates in each Update() call
-		for(int j = 0; j < dimension; j++){
-
-			int val = centr->get_coordinate(j);
-			cluster_table.AddtoPoint(i,j,val);
-		}
-
-		for (int l = 0; l < L; l++){
-			
-
-			// find the position of the query in the lth hash table
-			query_bucket_position = cluster_table.Compute_g(i,k_lsh,M,m,w,TableSize,s_params,l);
-
-			// find how many elements the bucket has
-			int size_of_bucket = H_Tables[l]->SizeofBucket(query_bucket_position);
-
-			// if the query fell on an empty bucket, ignore
-			if (size_of_bucket == 0) continue; 
-
-			// for each element in the bucket
-			for(int n = 0; n < size_of_bucket; n++ ){
-
-				int id = H_Tables[l]->Pop_ID(query_bucket_position,n);
-
-				Point& bucket_point = input.Retrieve(id-1);
-				int nearest_cluster = bucket_point.Nearest_Cluster_id();
-
-				// It's the first assignment for point
-				if(nearest_cluster == -1){
-
-					bucket_point.Assign_Cluster(i);
-					clusters[i].Assign_Point(id-1);
-					already_assigned.insert(id-1);
-				}
-				else{
-					// Ignore if it's the same cluster
-					if(nearest_cluster == i){ 
-						++points_not_changed;
-						continue;
-					}
-
-					// The point was already assigned to a different cluster
-					// Calculate distance from point to the two clusters
-					Point& old_centroid_point = *(clusters[nearest_cluster].get_centroid());
-					
-					int old_cluster_distance = Distance(old_centroid_point,bucket_point,1);
-					int new_cluster_distance = Distance(centroid_point,bucket_point,1);
-
-					// If the new distance is better, assign the point to the new
-					// cluster, and dissasociate the old cluster from the point
-					if(new_cluster_distance < old_cluster_distance){
-						
-						bucket_point.Assign_Cluster(i);
-						clusters[i].Assign_Point(id-1);	
-						clusters[nearest_cluster].Remove_Point(id-1);
-						already_assigned.insert(id-1);
-					}
-					else{ 
-						
-						++points_not_changed;
-					}	
-				}
-
-			}
-
-		}	
-
-	
-	}
-
-
-	int not_visited = 0;
-	int not_assigned = 0;
-
-	// for the points that were not assigned, compute loyd's distance
-	for(int i = 0; i < input_points; i++ ){
-
-		std::set<int>::iterator it = already_assigned.find(i);
-		// if i doesn't belong in the set
-		if(it == already_assigned.end()){
-			++not_visited;
-			Point& point = input.Retrieve(i);
-			int old_point_cluster = point.Nearest_Cluster_id();
-
-			int nearest_cluster_id = Min_Centroid_From_Point(point,clusters,k);
-			if(old_point_cluster != nearest_cluster_id){
-				
-				++not_assigned;
-				//cout << "Point id " << i << " found a better cluster: " << nearest_cluster_id << " .Old cluster id = " << old_point_cluster <<endl;
-				point.Assign_Cluster(nearest_cluster_id);
-				clusters[nearest_cluster_id].Assign_Point(i);
-
-				if(old_point_cluster != -1) clusters[old_point_cluster].Remove_Point(i);
-			}
-			
-		}
-
-	}
-
-	cout << "Set has " << already_assigned.size() << " points " <<endl;
-	cout << "Non visited points : " << not_visited <<endl;
-	cout << "Non assigned points : " << not_assigned <<endl;
-
-	points_already_assigned = already_assigned.size() + not_assigned;
-
-	if(points_already_assigned == 0) changed = false;
-
-	*assigned = points_already_assigned;
-	cout << "New points assigned = " << *assigned <<endl;
-	return changed;
-
-}
-*/
-
-
-/*
-bool Hypercube_Reverse_Assignment(Point_Array& input,Cluster* clusters,int k,double** s_params_cube,
-									Hypercube* hcube,int* assigned,int probes, int Max_elements){
-
-	vector<int> *bucket_records;
-
-	// Insert clusters to a Point_Array class
-	Point_Array cluster_table(k);
-	int dimension = input.get_dimension();
-	int input_points = input.get_ArraySize();
-	int remaining;
-	int probes_count;
-
-	// stores distinct point ids that are assigned to a cluster
-	std::set<int> already_assigned;
-
-	// for each cluster
-	for(int i = 0; i < k; i++){	
-
-		string query_label;	
-		Point* centr = clusters[i].get_centroid();
-		Point& centroid_point = *centr;
-
-		// Fill the cluster Point_Array class with the centroids.
-		// They must be re-filled at each assignment, since
-		// the centroids change coordinates in each Update() call
-		for(int j = 0; j < dimension; j++){
-
-			int val = centr->get_coordinate(j);
-			cluster_table.AddtoPoint(i,j,val);
-		}
-
-		// find the position of the query in the cube table
-		query_label = cluster_table.Compute_f(i, k_hypercube, M, m, w, s_params_cube, hcube);
-
-		//Initialize Hamming class needed for the probes. Make and delete for every query
-		Hamming* hamming = new Hamming(query_label, probes);
-
-		remaining = Max_elements;
-
-		
-		do{
-			//retrieve pointer to a Vertex which is the actual bucket corresponding to the query_label
-			bucket_records = hcube->retrieve_records_vector(query_label);
-
-			while(bucket_records == NULL){
-				cout << "Records vector is empty!" << endl;
-
-				if (hamming->get_usedprobes() == probes)
-					break;		//Thresold reached: we cannot go further so searching has to stop
-				
-				//move_to_next: should actually check next in map, change the current_in_use and increase used_probes
-				//Returns the new label of the bucket we move to
-				query_label = hamming->move_to_next();
-				cout << "New query label after probing is: " << query_label << endl;
-				//Change bucket to the next one to be checked
-				bucket_records = hcube->retrieve_records_vector(query_label);
-			
-			}
-
-			
-			int bucket_size = bucket_records->size();
-			cout << "Cluster " << i << " fell in vertex " << query_label << " with size " << bucket_size <<endl;
-			
-			if(bucket_size == 0) continue;
-			
-
-			// for each element in the vertex
-			for(int j = 0; j < bucket_size; j++ ){
-
-				
-				if(remaining <= 0) break;
-				// pop id from the query's bucket
-				int id = bucket_records->at(j); 
-				Point& bucket_point = input.Retrieve(id-1);
-
-				int nearest_cluster = bucket_point.Nearest_Cluster_id();
-
-				// It's the first assignment for point
-				if(nearest_cluster == -1){
-
-					--remaining;
-					bucket_point.Assign_Cluster(i);
-					clusters[i].Assign_Point(id-1);
-					already_assigned.insert(id-1);
-				}
-				else{
-					// Ignore if it's the same cluster
-					if(nearest_cluster == i){ 
-						//already_assigned.insert(id-1);
-						continue;
-					}
-
-					// The point was already assigned to a different cluster
-					// Calculate distance from point to the two clusters
-					Point& old_centroid_point = *(clusters[nearest_cluster].get_centroid());
-					
-					int old_cluster_distance = Distance(old_centroid_point,bucket_point,1);
-					int new_cluster_distance = Distance(centroid_point,bucket_point,1);
-
-					// If the new distance is better, assign the point to the new
-					// cluster, and dissasociate the old cluster from the point
-					if(new_cluster_distance < old_cluster_distance){
-						
-						--remaining;
-						bucket_point.Assign_Cluster(i);
-						clusters[i].Assign_Point(id-1);	
-						clusters[nearest_cluster].Remove_Point(id-1);
-						already_assigned.insert(id-1);
-					}
-
-				}
-				
-			}		
-	
-			query_label = hamming->move_to_next();
-			
-		}while(hamming->get_usedprobes() < probes);
-
-		remaining = Max_elements;
-		
-		delete hamming;
-	}
-
-	
-	int not_visited = 0;
-	int not_assigned = 0;
-
-	// for the points that were not assigned, compute loyd's distance
-	for(int i = 0; i < input_points; i++ ){
-
-		std::set<int>::iterator it = already_assigned.find(i);
-		// if i doesn't belong in the set
-		if(it == already_assigned.end()){
-			++not_visited;
-			Point& point = input.Retrieve(i);
-			int old_point_cluster = point.Nearest_Cluster_id();
-
-			int nearest_cluster_id = Min_Centroid_From_Point(point,clusters,k);
-			if(old_point_cluster != nearest_cluster_id){
-				
-				++not_assigned;
-				//cout << "Point id " << i << " found a better cluster: " << nearest_cluster_id << " .Old cluster id = " << old_point_cluster <<endl;
-				point.Assign_Cluster(nearest_cluster_id);
-				clusters[nearest_cluster_id].Assign_Point(i);
-
-				if(old_point_cluster != -1) clusters[old_point_cluster].Remove_Point(i);
-			}
-			
-		}
-
-	}
-
-	cout << "Set has " << already_assigned.size() << " points " <<endl;
-	cout << "Non visited points : " << not_visited <<endl;
-	cout << "Non assigned points : " << not_assigned <<endl;
-
-	int points_already_assigned = already_assigned.size() + not_assigned;
-
-	bool changed = true;
-	if(points_already_assigned == 0) changed = false;
-
-	*assigned = points_already_assigned;
-	cout << "New points assigned = " << *assigned <<endl;
-	return changed;
-}
-*/
-
 void Silhouette(Point_Array& input,Cluster* clusters,int k,double* s,double* s_total){
 
 	int point_size = input.get_ArraySize();
@@ -867,21 +433,17 @@ void Configuration_File(string filename,int* K){
     infile.close();
 }
 
-void Output_Results(Point_Array& input,Cluster* clusters, int k ,double *s, string outputfile,string method,
-					double time,double s_total,bool complete){
+void Output_Results(Point_Array& input,Cluster* clusters, int k ,double *s, string outputfile,
+					double time,double s_total,string message){
 
 	int input_points = input.get_ArraySize();
 	ofstream outfile;
     outfile.open(outputfile, ios::out | ios::trunc );
 
-	outfile << "Algorithm: ";
-
-	if(method == "Classic") outfile << "Lloyds" <<endl;
-	else if(method == "LSH") outfile << "Range Search LSH" <<endl;
-	else outfile << "Range Search Hypercube" <<endl;
+	outfile << message << endl;
 
 	int clustersize;
-
+	
 	for(int i = 0; i < k; i++){
 
 		clustersize = clusters[i].Cluster_Size();
@@ -902,22 +464,185 @@ void Output_Results(Point_Array& input,Cluster* clusters, int k ,double *s, stri
 	for(int i = 0; i < input_points; i++){
 		outfile << s[i] << ",";
 	}
-	outfile << " " << s_total << "]" << endl;
+	outfile << " " << s_total << "]" << endl << endl;
+
+	
+	for(int i = 0; i < k; i++)
+		outfile << "CLUSTER-"<<i+1 << " value of Objective Function: " <<  clusters[i].Get_Objective() << endl;
+	
+	outfile << endl << "Silhouette Total Average: " << s_total << endl;
+
+	outfile.close();
+}
 
 
-	if(complete == true){
-		
-		for(int i = 0; i < k; i++){
+void Class_File_Output(Point_Array& input,string class_file,string class_output){
 
-			clustersize = clusters[i].Cluster_Size();
-			outfile << "CLUSTER-" << i+1 << "{centroid, ";
+	ofstream outfile;
+    outfile.open(class_output, ios::out | ios::trunc );
 
-			for(int j = 0; j < clustersize; j++){
-				outfile << clusters[i].Retrieve_ID(j) << ", ";
+	outfile << "CLASSES AS CLUSTERS" << endl;
+
+	ifstream infile;
+    infile.open(class_file);
+
+    string line;
+
+    int cluster_id = 0;
+    int** images_id;
+    
+	int* cluster_sizes = new int[10];
+	int* centroids = new int[10];
+
+    images_id = new int*[10];
+
+    for(int i = 0; i < 10; i++)
+        images_id[i] = NULL;
+
+    while(getline(infile, line)){
+       // cout << line.size() << endl;
+        //line_c = (char*)malloc(line.size()*sizeof(char));
+        char line_c[(int)line.size()];
+        strcpy(line_c,line.c_str());
+        char* token = strtok(line_c, " ");
+        char cluster_size_str[] = "size:"; 
+        bool found_size = false;
+        int position = 0;
+
+        while(token != NULL){
+
+            if(images_id[cluster_id] != NULL){
+                images_id[cluster_id][position] = atoi(token);
+                ++position;
+            }
+
+            if(found_size == true){
+                int size = atoi(token);
+				cluster_sizes[cluster_id] = size;
+                //cout << "Size: " << size << endl;
+                found_size = false;
+                images_id[cluster_id] = new int[size];
+            }
+
+            if(strcmp(token,cluster_size_str) == 0){
+                found_size = true;
+            }
+
+            token = strtok(NULL," ");
+            
+        }
+        ++cluster_id;
+        if(cluster_id == 10) break;
+    }
+
+	cout << endl << "Writing to " << class_output << "..." << endl;
+
+	for(int k = 0; k < 10; k++){
+
+		double global_min_distance = std::numeric_limits<double>::max();
+		double dist = 0.0;
+		int min_pos = 0;
+
+		for(int i = 0; i < cluster_sizes[k]; i++){
+			Point& pt1 = input.Retrieve(images_id[k][i]);
+
+			for(int j = 0; j < cluster_sizes[k]; j++){
+				if(i != j){
+					Point& pt2 = input.Retrieve(images_id[k][j]);
+					dist += Distance(pt1,pt2,1);
+					//outfile << Distance(pt1,pt2,1) << endl;
+
+				}
 			}
-			outfile << "}" << endl;
+			
+			if(dist < global_min_distance){
+				global_min_distance = dist;
+				min_pos = i;
+			}
+
+			dist = 0.0;
 		}
+
+		centroids[k] = min_pos;
+
+		//cout << "The point with the min distance from every other point is : " <<images_id[k][min_pos] << endl;
+
+		Point& centr = input.Retrieve(images_id[k][min_pos]);
+		//cout << endl << "Objective function value for cluster " << k+1 << " : " << global_min_distance << endl;
+		outfile << "CLUSTER-"<<k+1 << " value of Objective Function: " <<  global_min_distance << endl;
 	}
 
+	cout << "Finding Silhouette for class file" << endl;
+	outfile << "Silhouette: [" << endl;
+
+	int point_size = input.get_ArraySize();
+	int nearest,second_nearest;
+	int centroid_distances[10];
+	int centroid_distances_copy[10];
+	double dist;
+	double s[point_size];
+
+	for(int i = 0; i < point_size; i++){
+
+		Point& pt = input.Retrieve(i);
+
+		for(int j = 0; j < 10; j++){
+			Point& centr = input.Retrieve(centroids[j]);
+			dist = Distance(pt,centr,1);
+			centroid_distances[j] = dist;
+			centroid_distances_copy[j] = dist;
+
+		}
+
+		quickSort(centroid_distances,0,9);
+		for(int j = 0; j < 10; j++){
+			if(centroid_distances[0] == centroid_distances_copy[j])
+				nearest = j;
+			else if (centroid_distances[1] == centroid_distances_copy[j])
+				second_nearest = j;
+		}
+
+		double average_nearest;
+		double average_second_nearest;
+		
+		double average = 0.0;
+		for(int k = 0; k < cluster_sizes[nearest]; k++){
+			Point& pt1 = input.Retrieve(images_id[nearest][k]);
+			average += Distance(pt,pt1,1);
+
+		}
+		average_nearest = average/cluster_sizes[nearest];
+
+		average = 0.0;
+		for(int k = 0; k < cluster_sizes[second_nearest]; k++){
+			Point& pt1 = input.Retrieve(images_id[second_nearest][k]);
+			average += Distance(pt,pt1,1);
+
+		}
+		average_second_nearest = average/cluster_sizes[second_nearest];
+
+		s[i] = (average_nearest - average_second_nearest) / (std::max(average_nearest,average_second_nearest)) ;
+
+		outfile << s[i] << ",";
+	
+	}	
+
+	double s_total = 0.0;
+
+	for(int i = 0; i < point_size; i++){
+		s_total += s[i];
+	}
+
+	outfile << " " << s_total << "]" << endl << endl;
+	outfile << endl << "Silhouette Total Average: " << s_total << endl;
+
+
+	for(int i = 0; i < 10; i++)
+		delete[] images_id[i];
+
+	delete[] images_id;
+	delete[] cluster_sizes;
+	delete[] centroids;
+	infile.close();
 	outfile.close();
 }
