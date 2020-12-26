@@ -168,7 +168,7 @@ repeat = True
 global reduced_dimension
 reduced_dimension = 10
 
-retrain_option = input("If you want to retrain the model press 1: ")
+retrain_option = input("If you want to retrain the model press 1. Any other option will use pretrained model: ")
 if (int(retrain_option) == 1):
     # model_path = '/content/drive/My Drive/ML/data3/results/'            #for the colab
     model_path = input("Insert the path to save the models: ") #for the .py 
