@@ -288,7 +288,7 @@ for i in range(len(query_signatures)):
       print("Neighbor number %d for Query number %d is number %d - FAILED" %(k+1,test_labels[i],neighbor)) 
     #show_image(train_data[key[k]])
   print("Scored %d / 10 \n" %score)
-  total_score_NN += score
+  total_score += score
 
 print("Total score : %d" %total_score)
 
@@ -299,7 +299,7 @@ Lines = f.readlines()
 query_count = 0
 counter = 0
 score = 0
-total_score = 0
+total_score_NN = 0
 
 for i in range(0,len(Lines),10):
 
