@@ -309,7 +309,7 @@ Lines = f.readlines()
 query_count = 0
 counter = 0
 score = 0
-total_score = 0
+total_score_NN = 0
 
 for i in range(0,len(Lines),10):
 
@@ -326,7 +326,7 @@ for i in range(0,len(Lines),10):
 			print("Neighbor number %d for Query number %d is number %d - FAILED" %(j+1,query_label,neighbor)) 
 
 	print("Scored %d / 10 \n" %score)
-	total_score += score
+	total_score_NN += score
 
 	score = 0
 	query_count += 1
