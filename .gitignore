@@ -36,3 +36,6 @@ Point_Implementation.o
 Point_Table_Implementation.o
 search
 utilities.o
+t10k-labels-idx1-ubyte
+train-labels-idx1-ubyte
+resultsEMD
