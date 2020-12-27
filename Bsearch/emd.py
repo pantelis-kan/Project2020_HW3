@@ -204,7 +204,16 @@ image_dimension = train_data.shape[1]
 # define the cluster size in pixels
 # example : cluster_size = 7 means 7x7 sized cluster
 # 7x7 = 16 clusters for one image
-cluster_size = 7
+
+divisors = [1,2,4,7,14]
+
+cluster_size = input("Choose cluster size")
+cluster_size = int(cluster_size)
+
+if cluster_size not in divisors:
+  print("Invalid cluster size. Choosing default(7)")
+  cluster_size = 7    
+
 input_signatures = []
 query_signatures = []
 
